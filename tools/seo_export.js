@@ -11,19 +11,24 @@
       var built = null; try { built = X.buildPlanFromTemplate(t, base); } catch(e){ built = null; }
       var sc = X.scoreTemplate(t, base, built);
       if(!sc.ok || !built){ lot.unfit.push({key:t.key, name:t.name, why:sc.why.slice(0,2)}); return; }
-      var st = X.computePlanStats(built.plan), geo = built._geo || X.planGeometry(built.plan), levels = {};
+      var st = X.computePlanStats(built.plan), levels = {};
+      // bản vẽ + danh sách phòng giống hệt phương án người dùng nhận khi bấm "Tạo phương án từ mẫu này"
+      // (đã ghi kích thước → nhãn 📐, diện tích trong danh sách = trên bản vẽ); giá vẫn như thẻ nhà mẫu
+      var shown = JSON.parse(JSON.stringify(built.plan));
+      if(X.stampRoomDims) X.stampRoomDims(shown, true);
+      var geo = X.planGeometry(shown);
       X.FINISH_LEVELS.forEach(function(lv){ var b2 = X.buildPlanFromTemplate(t, ctxOf(w, l, lv.key, 'rough_finish_package')); levels[lv.key] = b2 ? Math.round(X.computePlanStats(b2.plan).total) : null; });
       var br = X.buildPlanFromTemplate(t, ctxOf(w, l, 'standard', 'rough_package'));
       var fl = {}, outdoor = [];
-      built.plan.floors.forEach(function(f){ fl[f.id] = {name:f.name, area:Number(f.area), dim:f.dimension, rooms:[]}; });
-      built.plan.rooms.forEach(function(r){ var o = {n:r.name, a: r.area ? Number(r.area) : null, t:X.geoRoomType(r.name)}; if(r.floorId && fl[r.floorId]) fl[r.floorId].rooms.push(o); else outdoor.push(o); });
+      shown.floors.forEach(function(f){ fl[f.id] = {name:f.name, area:Number(f.area), dim:f.dimension, rooms:[]}; });
+      shown.rooms.forEach(function(r){ var o = {n:r.name, a: r.area ? Number(r.area) : null, t:X.geoRoomType(r.name)}; if(r.floorId && fl[r.floorId]) fl[r.floorId].rooms.push(o); else outdoor.push(o); });
       lot.items.push({key:t.key, name:t.name, icon:t.icon, desc:t.desc, tags:t.tags, score:sc.score, why:sc.why, houseType:built.spec.houseType, roof:built.plan.house.roofType,
         info:built.info, bw:geo.bw, bl:geo.bl, density:geo.density, total:Math.round(st.total), perM2:Math.round(st.costPerM2 || 0), packageCost:Math.round(st.packageCost || 0),
         byCat: X.CATEGORIES.map(function(c){ return Math.round(st.byCategory[c.key].sum || 0); }), levels:levels, roughTotal: br ? Math.round(X.computePlanStats(br.plan).total) : null,
-        floors: built.plan.floors.map(function(f){ return fl[f.id]; }), outdoor:outdoor,
-        elevation: X.houseElevationSvg(built.plan, geo),
-        floorSvgs: geo.floors.map(function(f, i){ return {name:f.name, area:f.area, svg:X.renderVizSvg(built.plan, geo, i, {interactive:false, colorBy:'type'})}; }),
-        lotSvg: X.renderVizSvg(built.plan, geo, 'lot', {interactive:false, colorBy:'type'})});
+        floors: shown.floors.map(function(f){ return fl[f.id]; }), outdoor:outdoor,
+        elevation: X.houseElevationSvg(shown, geo),
+        floorSvgs: geo.floors.map(function(f, i){ return {name:f.name, area:f.area, svg:X.renderVizSvg(shown, geo, i, {interactive:false, colorBy:'type'})}; }),
+        lotSvg: X.renderVizSvg(shown, geo, 'lot', {interactive:false, colorBy:'type'})});
     });
     lot.items.sort(function(a, b){ return b.score - a.score; });
     out.lots.push(lot);

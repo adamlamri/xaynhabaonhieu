@@ -591,6 +591,67 @@
   .viz3d canvas{display:block;border-radius:12px;}
   .viz3d-msg{margin:auto;text-align:center;color:var(--color-text-muted);padding:20px;}
   .viz3d-ctl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-top:10px;}
+
+  /* ---------- Chỉnh phòng trực tiếp trên mặt bằng (skill mat-bang-2d) ---------- */
+  .viz-stage{position:relative;}
+  .viz-svg-wrap{width:100%;display:flex;justify-content:center;}
+  .viz-stage.has-sel .viz-svg{touch-action:none;}
+  .viz-stage.dragging{cursor:grabbing;user-select:none;-webkit-user-select:none;}
+  .viz-stage.dragging .viz-hd{transition:none;}
+  .viz-svg .viz-room.sel{cursor:grab;}
+  .viz-hd{position:absolute;z-index:3;width:34px;height:34px;margin:-17px 0 0 -17px;padding:0;border-radius:50%;border:2px solid #fff;background:var(--color-primary);color:#fff;font-size:17px;font-weight:700;line-height:1;display:grid;place-items:center;box-shadow:0 2px 8px rgba(15,23,42,.35);cursor:ew-resize;touch-action:none;visibility:hidden;}
+  .viz-hd[data-hd="h"]{cursor:ns-resize;}
+  .viz-hd::after{content:'';position:absolute;inset:-8px;border-radius:50%;}
+  .viz-bubble{position:absolute;z-index:4;transform:translate(-50%,-100%);background:#0f172a;color:#fff;font-size:13px;font-weight:650;padding:5px 9px;border-radius:8px;white-space:nowrap;pointer-events:none;max-width:90vw;overflow:hidden;text-overflow:ellipsis;}
+  .viz-zoom{position:absolute;right:8px;top:8px;z-index:2;box-shadow:var(--shadow-sm);}
+  .viz-ghost{position:fixed;z-index:300;transform:translate(-50%,-150%);background:var(--color-primary);color:#fff;font-size:13px;font-weight:650;padding:6px 10px;border-radius:10px;pointer-events:none;box-shadow:var(--shadow-lg);white-space:nowrap;}
+  .viz-svg .viz-room.drop-on .viz-cell{stroke:var(--color-primary);stroke-width:5px;stroke-dasharray:7 4;}
+  .chip.drop-on{outline:3px solid var(--color-primary);outline-offset:2px;}
+  .viz-svg .viz-room.off .viz-cell{stroke:var(--color-warning,#d97706);stroke-width:3px;stroke-dasharray:6 3;}
+  .viz-svg .viz-room.sel.off .viz-cell{stroke:var(--color-primary);stroke-width:4px;}
+  .viz-svg .viz-room.flash .viz-cell{animation:vzflash .7s ease-in-out 3;}
+  @keyframes vzflash{50%{filter:brightness(.78) saturate(1.8);}}
+  .viz-color-row{display:flex;justify-content:flex-end;margin-top:8px;}
+  .room-tile.off .rt-sub{color:var(--color-warning,#d97706);}
+  .room-panel{padding:0;overflow:hidden;}
+  .viz-side .room-panel{position:sticky;top:calc(var(--header-h) + 56px);z-index:5;}
+  .rp-body{padding:12px 14px 14px;max-height:calc(100vh - var(--header-h) - 80px);overflow-y:auto;overscroll-behavior:contain;}
+  .rp-head{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-bottom:10px;position:relative;}
+  .rp-title{min-width:0;}
+  .rp-title .sh-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rp-grip{display:none;}
+  .rp-tools{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .rp-mob{display:none;}
+  .st-lim{font-size:11.5px;color:var(--color-text-muted);}
+  .st-lim.at{color:var(--color-warning,#d97706);}
+  .hint-box.rp-off,.hint-box.rp-ripple{flex-direction:column;align-items:stretch;gap:8px;margin:8px 0;}
+  .hint-box.rp-off{background:var(--color-warning-soft);}
+  .rp-ripple .btn{align-self:flex-start;}
+  .rp-why{font-size:13.5px;line-height:1.5;margin:0 0 12px;}
+  .chip.chip-off{opacity:.55;border-style:dashed;}
+  @media (max-width:760px){
+    .viz-desc{display:none;}
+    .viz-floors{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;}
+    .viz-floors .chip{flex:0 0 auto;}
+    .viz-stage{padding:4px;}
+    /* không có hiệu ứng mở: bảng được vẽ lại sau mỗi lần bấm −/+, hiệu ứng sẽ chớp liên tục */
+    .room-panel{position:fixed;left:0;right:0;bottom:calc(62px + env(safe-area-inset-bottom));z-index:58;margin:0 !important;border-radius:18px 18px 0 0;border-bottom:none;box-shadow:0 -8px 28px rgba(15,23,42,.2);}
+    .viz-side .room-panel{position:fixed;top:auto;z-index:58;}
+    .rp-body{max-height:40vh;padding:2px 12px 12px;}
+    .room-panel.high .rp-body{max-height:calc(100vh - 150px);}
+    .rp-grip{display:block;position:absolute;left:50%;top:-4px;transform:translateX(-50%);width:72px;height:24px;border:none;background:none;padding:0;cursor:pointer;}
+    .rp-grip::before{content:'';display:block;width:40px;height:5px;border-radius:3px;background:var(--sheet-handle);margin:7px auto 0;}
+    .rp-head{padding-top:16px;margin-bottom:8px;}
+    .rp-tools{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;}
+    .rp-tools .btn{flex:0 0 auto;}
+    .rp-mob{display:inline-flex;}
+    body.room-panel-open .fab{display:none;}
+    body.room-panel-open .toast-stack{bottom:calc(40vh + 110px + env(safe-area-inset-bottom));}
+    body.room-panel-open .container{padding-bottom:44vh;}
+    /* đang chỉnh phòng: đầu trang cuộn đi để bản vẽ + bảng phòng chiếm trọn màn hình */
+    body.room-panel-open .sticky-top{position:static;}
+    body.room-panel-open .viz-svg{max-height:calc(60vh - 84px);}
+  }
   .range-lbl{display:inline-flex;align-items:center;gap:8px;font-size:13px;}
   .range-lbl input{width:140px;accent-color:var(--color-primary);}
   .el-svg .el-ground{fill:var(--el-ground);}
@@ -2725,12 +2786,13 @@
       try { selS = ae.selectionStart; selE = ae.selectionEnd; } catch(e){ /* select/checkbox */ }
     }
     var scrolls = {};
-    Array.prototype.forEach.call(app.querySelectorAll('[data-scroll-key]'), function(el){ scrolls[el.dataset.scrollKey] = el.scrollLeft; });
+    Array.prototype.forEach.call(app.querySelectorAll('[data-scroll-key]'), function(el){ scrolls[el.dataset.scrollKey] = [el.scrollLeft, el.scrollTop]; });
 
     app.innerHTML = renderHeader() + renderBody() + renderBottomNav();
 
     Array.prototype.forEach.call(app.querySelectorAll('[data-scroll-key]'), function(el){
-      if(scrolls[el.dataset.scrollKey]) el.scrollLeft = scrolls[el.dataset.scrollKey];
+      var sc = scrolls[el.dataset.scrollKey];
+      if(sc){ if(sc[0]) el.scrollLeft = sc[0]; if(sc[1]) el.scrollTop = sc[1]; }
     });
     var target = null;
     if(state.pendingFocus){
@@ -5009,7 +5071,14 @@
   // phòng phụ mở cửa từ phòng chủ (WC master, phòng thay đồ…): không cần cửa ra hành lang
   function attachedRoom(r){ return (r.type === 'wc' && /master|ông bà|bố mẹ|riêng/i.test(r.name || '')) || ((r.type === 'other' || r.type === 'corridor') && /thay đồ|tủ đồ/i.test(r.name || '')); }
   // Chia tổng chiều sâu cho các đoạn theo nhu cầu (v), không đoạn nào dưới mức tối thiểu (min)
+  // fix: đoạn mà mọi phòng đã chọn kích thước → giữ đúng chiều sâu đó, các đoạn còn lại nhận phần dư
+  // (skill mat-bang-2d: chốt 1 phòng đúng cỡ đang vẽ thì bản vẽ phải đứng yên)
   function fitDepths(segs, total){
+    if(segs.some(function(g){ return g.fix; }) && segs.some(function(g){ return !g.fix && g.v > 0; })){
+      var used = segs.reduce(function(s, g){ return s + (g.fix ? Math.max(g.fix, g.min) : 0); }, 0);
+      var sub = fitDepths(segs.filter(function(g){ return !g.fix; }).map(function(g){ return {v:g.v, min:g.min}; }), total - used);
+      if(sub){ var k = 0; return segs.map(function(g){ return g.fix ? Math.max(g.fix, g.min) : sub[k++]; }); }
+    }
     var d = segs.map(function(){ return 0; }), fixed = segs.map(function(){ return false; });
     for(var it = 0; it < segs.length + 1; it++){
       var left = total, vs = 0;
@@ -5128,7 +5197,8 @@
     });
     // phần ngoài cùng: phòng chính + dải ban công / lô gia mặt nhà
     var restMin = !rest.length ? 0 : (relaxed ? minD(rest) : minD(rest.filter(function(r){ return !facadeOpen(r); })) + rest.filter(facadeOpen).reduce(function(s, r){ return s + clampNum(r.area / rect.w, 1.1, 2.4); }, 0));
-    var ds = all ? [0, rect.h, 0] : fitDepths([{v:sumA(lead) / rect.w, min: lead.length ? Math.min(minD(lead), 3) : 0}, {v:bandV, min:bandMin}, {v:sumA(rest) / rect.w, min:restMin}], rect.h);
+    function fixD(l, v){ return l.length && l.every(function(r){ return r.want; }) ? v : null; }
+    var ds = all ? [0, rect.h, 0] : fitDepths([{v:sumA(lead) / rect.w, min: lead.length ? Math.min(minD(lead), 3) : 0, fix:fixD(lead, sumA(lead) / rect.w)}, {v:bandV, min:bandMin, fix:fixD(covered, bandV)}, {v:sumA(rest) / rect.w, min:restMin, fix:fixD(rest, sumA(rest) / rect.w)}], rect.h);
     if(!ds) return false;
     var y = dir > 0 ? rect.y : rect.y + rect.h;
     function seg(d){ var r = dir > 0 ? {x:rect.x, y:y, w:rect.w, h:d} : {x:rect.x, y:y - d, w:rect.w, h:d}; y += dir * d; return r; }
@@ -5215,7 +5285,9 @@
     }
     function takeLw(){ return pick(function(r){ return r.type === 'lightwell'; }) || {id:null, name:'Giếng trời', type:'lightwell', area:3, virtual:true}; }
     // WC / giặt dùng chung đứng vào trục ướt; WC riêng (master, ông bà) ở lại cạnh phòng của nó
-    function takeWet(){ return pick(function(r){ return (r.type === 'wc' || r.type === 'laundry') && !/master|ông bà|bố mẹ|riêng/i.test(r.name || ''); }) || {id:null, name:'Kho / tủ âm', type:'other', area:3, virtual:true}; }
+    function takeWet(){ return pick(function(r){ return (r.type === 'wc' || r.type === 'laundry') && !/master|ông bà|bố mẹ|riêng/i.test(r.name || ''); }) || takeKho('Kho / tủ âm'); }
+    // ô kho trong lõi kỹ thuật: dùng phòng "Kho" người dùng đã thêm (skill mat-bang-2d: "Biến thành phòng Kho")
+    function takeKho(nm){ return pick(function(r){ return (r.type === 'other' || r.type === 'corridor') && !r.virtual && /^(kho|tủ âm)/i.test(r.name || ''); }) || {id:null, name:nm, type:'other', area:3, virtual:true}; }
     // Ô cạnh cầu thang: lối đi ≥ 0,9 m sát cầu thang + các phòng nhỏ đứng liền cầu thang
     var hasLift = inside.some(function(r){ return r.type === 'elevator'; });
     var wetSide = null;                     // trục WC nằm bên trái / phải dải lối đi
@@ -5233,13 +5305,13 @@
             // thang thẳng dọc tường (lô < 4,2 m): ô cạnh thang = WC (sát lối vào phía trước) + giếng trời phía sau
             var wd = clampNum(svc.wcA / rw, 1.6, Math.min(2.6, sc.h - 1.2));
             place(takeWet(), {x:rx, y:sc.y, w:rw, h:wd});
-            place(svc.lw ? takeLw() : {id:null, name:'Kho / tủ âm', type:'other', area:3, virtual:true}, {x:rx, y:sc.y + wd, w:rw, h:sc.h - wd});
+            place(svc.lw ? takeLw() : takeKho('Kho / tủ âm'), {x:rx, y:sc.y + wd, w:rw, h:sc.h - wd});
             svc.lwDone = true;
           } else if(rw >= 3){
             // nhà rộng: ô WC sát lối đi + giếng trời cạnh thang phía tường ngoài
             var ww = clampNum(svc.wcA / sc.h, 1.5, 2), far = nearS ? rx + ww : rx;
             place(takeWet(), {x: nearS ? rx : rx + rw - ww, y:sc.y, w:ww, h:sc.h});
-            place(svc.lw ? takeLw() : {id:null, name:'Kho', type:'other', area:3, virtual:true}, {x:far, y:sc.y, w:rw - ww, h:sc.h});
+            place(svc.lw ? takeLw() : takeKho('Kho'), {x:far, y:sc.y, w:rw - ww, h:sc.h});
             svc.lwDone = true;
           } else place(takeWet(), {x:rx, y:sc.y, w:rw, h:sc.h});
           svc.wetDone = true;
@@ -5413,6 +5485,12 @@
 
   // Tính hình học đầy đủ của 1 phương án (kể cả phương án cũ chưa có kích
   // thước lô: tự đoán từ diện tích đất/tầng và đánh dấu guessed).
+  // Bản cũ của "Ghi kích thước" (khi tạo từ nhà mẫu) tự ghim khu cho MỌI phòng của tầng → tắt lõi kỹ thuật.
+  // Ghim kiểu đó không phải người dùng chọn: coi như chưa ghim (người dùng thường chỉ ghim 1–2 phòng).
+  function floorAutoPinned(plan, floorId){
+    var rs = (plan.rooms || []).filter(function(r){ return r.floorId === floorId && geoRoomType(r.name) !== 'stairs'; });
+    return rs.length >= 3 && rs.every(function(r){ return r.slot; });
+  }
   function planGeometry(plan){
     var h = plan.house || {};
     var floors = sortByOrder(plan.floors || []);
@@ -5471,11 +5549,11 @@
       var a = x.a || fp, ratio = clampNum(a / fp, 0.15, 1), full = ratio > 0.85;
       var hasOpen = i > 0 && !full;
       var rooms = sortByOrder((plan.rooms || []).filter(function(r){ return r.floorId === f.id; }));
-      var inside = [], openList = [], yardList = [];
+      var inside = [], openList = [], yardList = [], autoPin = floorAutoPinned(plan, f.id);
       rooms.forEach(function(r){
         var t = geoRoomType(r.name), m = roomMeta(t);
         var want = parseRoomDims(r.dimension);
-        var item = {id:r.id, name:r.name || 'Phòng', type:t, area: want ? want.w * want.h : (numOrNull(r.area) || m.area || 4), areaKnown: !!want || numOrNull(r.area) !== null, want:want, slot:r.slot || null, virtual:false};
+        var item = {id:r.id, name:r.name || 'Phòng', type:t, area: want ? want.w * want.h : (numOrNull(r.area) || m.area || 4), areaKnown: !!want || numOrNull(r.area) !== null, want:want, slot:autoPin ? null : (r.slot || null), virtual:false};
         if(t === 'gate'){ yardList.push(item); return; }
         if(m.outdoor){ if(i === 0) yardList.push(item); else openList.push(item); return; }
         if(m.open && hasOpen){ openList.push(item); return; }
@@ -5524,6 +5602,10 @@
         var span = Math.max(0, bl - sh);
         var lo = Math.max(Math.min(2.5, span / 2), needF), hi = span - Math.max(Math.min(2, span / 2), needB);
         var y = front + (lo <= hi ? clampNum(frac * span, lo, hi) : clampNum((lo + hi) / 2, 0, span));
+        // vị trí cầu thang đã chốt (house.stairAt, m từ mép trước nhà — ghi khi tạo từ nhà mẫu / khi bắt đầu
+        // chỉnh phòng trên 2D): giữ nguyên để đổi 1 phòng không làm cầu thang trượt kéo cả nhà xếp lại
+        var at = numOrNull(h.stairAt);
+        if(at !== null) y = front + clampNum(at, 0, span);
         // nhà chữ L/U: dời cầu thang sát mép khoảng sân để không sinh dải phòng mỏng < 3 m
         if(notch){
           [notch.y, notch.y + notch.h].forEach(function(e){
@@ -5673,7 +5755,7 @@
     var density = land ? footprint / land * 100 : null;
     var maxD = maxDensity(land);
     return {lotW:lotW, lotL:lotL, land:land, bw:bw, bl:bl, bx:bx, front:front, back:back, fp:footprint,
-      floors:geoFloors, yardFront:yardFront, yardBack:yardBack, courts:courts, notch:notch, blocks:blocks, sideYards:sideYards, gate:gate, unplaced:unplaced,
+      floors:geoFloors, yardFront:yardFront, yardBack:yardBack, courts:courts, notch:notch, blocks:blocks, sideYards:sideYards, gate:gate, unplaced:unplaced, core:core,
       guessed:guessed, warnings:warnings, roof:roofType, facing:h.facing || null, density:density, maxDensity:maxD,
       totalHeight: geoFloors.reduce(function(s, f){ return s + f.height; }, 0)};
   }
@@ -5725,14 +5807,27 @@
   }
   // Ô phòng: tên + diện tích (+ chi phí), tự thu nhỏ chữ cho vừa ô
   // Nhãn kích thước: 📐 = đúng kích thước đã chọn (lệch nhỏ do làm tròn/chia phần dư), ⚠ = tầng không đủ chỗ
-  function roomDimLabel(r){
-    var w = r.w, h = r.h, k = r.want;
+  // Một nguồn cho mọi nhãn kích thước (bản vẽ, thẻ phòng, bảng phòng — skill mat-bang-2d P4):
+  // ok = đặt đúng ngang × dài đã chọn, off = tầng không đủ chỗ (vẽ khác), auto = chưa chọn, bộ xếp tự chia
+  var DIM_TOL = 0.3;   // lệch ≤ 0,3 m mỗi cạnh (làm tròn 0,1 m, chia phần dư) vẫn tính là đặt đúng
+  function roomSizeInfo(r){
+    var k = r.want, w = round1(r.w), h = round1(r.h);
     if(k){
-      if(Math.abs(w - k.w) + Math.abs(h - k.h) <= 0.45) return '📐 ' + formatNumber(k.w) + ' × ' + formatNumber(k.h) + ' m';
-      if(Math.abs(w - k.h) + Math.abs(h - k.w) <= 0.45) return '📐 ' + formatNumber(k.h) + ' × ' + formatNumber(k.w) + ' m';
-      return '⚠ ' + formatNumber(round1(w)) + ' × ' + formatNumber(round1(h)) + ' m';
+      if(Math.abs(r.w - k.w) <= DIM_TOL && Math.abs(r.h - k.h) <= DIM_TOL) return {kind:'ok', text:formatNumber(k.w) + ' × ' + formatNumber(k.h) + ' m', area:round2(k.w * k.h)};
+      if(Math.abs(r.w - k.h) <= DIM_TOL && Math.abs(r.h - k.w) <= DIM_TOL) return {kind:'ok', text:formatNumber(k.h) + ' × ' + formatNumber(k.w) + ' m', area:round2(k.w * k.h)};
+      return {kind:'off', text:formatNumber(w) + ' × ' + formatNumber(h) + ' m', want:formatNumber(k.w) + ' × ' + formatNumber(k.h) + ' m', area:round1(r.w * r.h)};
     }
-    return formatNumber(round1(w)) + ' × ' + formatNumber(round1(h)) + ' m';
+    return {kind:'auto', text:formatNumber(w) + ' × ' + formatNumber(h) + ' m', area:round1(r.w * r.h)};
+  }
+  function roomDimLabel(r){
+    var i = roomSizeInfo(r);
+    return i.kind === 'ok' ? '📐 ' + i.text : (i.kind === 'off' ? '⚠ ' + i.text : '≈ ' + i.text);
+  }
+  // Tên viết tắt cho ô nhỏ (thay vì chỉ biểu tượng): "Phòng ngủ 2" → "PN2", "Hành lang" → "HL", "Kho / tủ âm" → "Kho"
+  function shortRoomName(n){
+    var s = String(n || '').split('/')[0].trim(), words = s.split(/\s+/), num = (s.match(/\d+$/) || [''])[0];
+    if(words.length < 2) return s.slice(0, 4);
+    return words.filter(function(x){ return !/^\d+$/.test(x); }).map(function(x){ return /^[A-ZĐ]{2,3}$/.test(x) ? x : x.charAt(0).toUpperCase(); }).join('') + num;
   }
   function svgRoom(lotL, r, fs, opts){
     var x = r.x, y = lotL - (r.y + r.h), w = r.w, hgt = r.h;
@@ -5740,7 +5835,10 @@
     var fill = opts.colorBy === 'cost' && !m.outdoor && r.type !== 'rooftop' ? costFill(opts.maxCost ? (opts.costs[r.id] || 0) / opts.maxCost : 0) : m.color;
     var pat = r.type === 'stairs' ? 'url(#vz-stairs)' : (r.type === 'rooftop' || r.type === 'lightwell' ? 'url(#vz-hatch)' : null);
     var sel = opts.selected && r.id && opts.selected === r.id;
-    var g = '<g class="viz-room' + (r.virtual ? ' virtual' : '') + (sel ? ' sel' : '') + '"' + (opts.interactive ? ' data-action="viz-room" data-id="' + esc(r.id || '') + '" data-name="' + esc(r.name) + '"' : '') + '>'
+    var info = r.virtual ? null : roomSizeInfo(r);
+    var g = '<g class="viz-room' + (r.virtual ? ' virtual' : '') + (sel ? ' sel' : '') + (info && info.kind === 'off' ? ' off' : '') + (opts.flash && r.id && opts.flash[r.id] ? ' flash' : '') + '"'
+      + (opts.interactive ? ' data-action="viz-room" data-id="' + esc(r.id || '') + '" data-name="' + esc(r.name) + '"'
+        + (r.id ? '' : ' data-vt="' + r.type + '" data-vx="' + r.x.toFixed(2) + '" data-vy="' + r.y.toFixed(2) + '" data-vw="' + w.toFixed(2) + '" data-vh="' + hgt.toFixed(2) + '"') : '') + '>'
       + '<rect x="' + x.toFixed(3) + '" y="' + y.toFixed(3) + '" width="' + Math.max(0, w).toFixed(3) + '" height="' + Math.max(0, hgt).toFixed(3) + '" fill="' + fill + '" class="viz-cell"/>'
       + (pat ? '<rect x="' + x.toFixed(3) + '" y="' + y.toFixed(3) + '" width="' + Math.max(0, w).toFixed(3) + '" height="' + Math.max(0, hgt).toFixed(3) + '" fill="' + pat + '" pointer-events="none"/>' : '');
     if(opts.labels !== false && w > 0.6 && hgt > 0.5){
@@ -5748,8 +5846,13 @@
       var size = Math.min(fs, w * 0.9 / (len * 0.56), hgt * 0.32);
       var cx = x + w / 2, cy = y + hgt / 2;
       var fg = opts.colorBy === 'cost' && opts.maxCost && (opts.costs[r.id] || 0) / opts.maxCost > 0.55 && !m.outdoor ? ' fg-light' : '';
+      if(size < fs * 0.5){
+        // ô nhỏ: thử tên viết tắt trước khi chỉ còn biểu tượng
+        var abbr = shortRoomName(name), aSize = Math.min(fs, w * 0.9 / (Math.max(2, abbr.length) * 0.6), hgt * 0.4);
+        if(abbr && aSize >= fs * 0.42){ g += svgText(x + w / 2, y + hgt / 2, abbr, aSize, {cls:'viz-label', weight:600}); return g + '</g>'; }
+      }
       if(size >= fs * 0.5){
-        var sub = (r.virtual ? (r.slack ? formatNumber(round1(w * hgt)) + ' m²' : '') : formatNumber(r.area) + ' m²') + (opts.showCost && opts.costs[r.id] ? ' · ' + formatCompactMoney(opts.costs[r.id]) : '');
+        var sub = (r.virtual ? (r.slack ? formatNumber(round1(w * hgt)) + ' m²' : '') : formatNumber(info.area) + ' m²') + (opts.showCost && opts.costs[r.id] ? ' · ' + formatCompactMoney(opts.costs[r.id]) : '');
         var subSize = Math.min(size * 0.82, w * 0.9 / (Math.max(4, sub.length) * 0.56));
         g += svgText(cx, cy - (sub && hgt > size * 2.6 ? size * 0.55 : 0), name, size, {cls:'viz-label' + fg, weight:600});
         if(sub && hgt > size * 2.6) g += svgText(cx, cy + size * 0.75, sub, subSize, {cls:'viz-sub' + fg});
@@ -5790,7 +5893,7 @@
     var fs = clampNum(Math.min(W, geo.bl) / 9, 0.28, 1.1);
     var costs = opts.costs || {}, maxCost = 0;
     Object.keys(costs).forEach(function(k){ maxCost = Math.max(maxCost, costs[k]); });
-    var ro = {colorBy:opts.colorBy, costs:costs, maxCost:maxCost, interactive:opts.interactive !== false, showCost:opts.showCost, selected:opts.selected, labels:opts.labels};
+    var ro = {colorBy:opts.colorBy, costs:costs, maxCost:maxCost, interactive:opts.interactive !== false, showCost:opts.showCost, selected:opts.selected, labels:opts.labels, flash:opts.flash};
     var body = '', vb;
     var pad = fs * 2.6;
     if(view === 'lot'){
@@ -5832,6 +5935,12 @@
       body += svgDim(geo.bx, top - pad * 0.45, geo.bx + geo.bw, top - pad * 0.45, formatNumber(geo.bw) + ' m', fs);
       body += svgDim(geo.bx - pad * 0.45, L - f.encl.y - f.encl.h, geo.bx - pad * 0.45, L - f.encl.y, formatNumber(f.encl.h) + ' m', fs);
       body += svgText(geo.bx + geo.bw / 2, L - geo.front + pad * 0.55, '▼ Mặt tiền', fs * 0.7, {cls:'viz-dim-t'});
+      // phóng to quanh phòng đang chọn (điện thoại: tay nắm dễ chạm hơn)
+      if(opts.focus){
+        var F = opts.focus, mg = Math.max(2, fs * 3);
+        var x0 = Math.max(vb[0], F.x - mg), y0 = Math.max(vb[1], L - F.y - F.h - mg), x1 = Math.min(vb[0] + vb[2], F.x + F.w + mg), y1 = Math.min(vb[1] + vb[3], L - F.y + mg);
+        vb = [x0, y0, x1 - x0, y1 - y0];
+      }
     }
     return '<svg class="viz-svg' + (opts.cls ? ' ' + opts.cls : '') + '" viewBox="' + vb.map(function(v){ return v.toFixed(2); }).join(' ') + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mặt bằng">'
       + svgDefs(fs) + body + '</svg>';
@@ -6919,7 +7028,16 @@
     var colorSeg = '<div class="seg"><button class="' + (vs.colorBy === 'type' ? 'active' : '') + '" data-action="viz-color" data-color="type">🎨 Theo loại phòng</button><button class="' + (vs.colorBy === 'cost' ? 'active' : '') + '" data-action="viz-color" data-color="cost">💰 Theo chi phí</button></div>';
     var stage;
     if(vs.mode === '2d'){
-      stage = '<div class="viz-stage">' + renderVizSvg(plan, geo, vs.view, {colorBy:vs.colorBy, costs:costs, showCost: vs.colorBy === 'cost', selected: vs.selected}) + '</div>';
+      // phòng đang chọn trên tầng đang xem → tay nắm ↔ ↕ (đặt vị trí sau khi vẽ, vizStageInit) + nút phóng to
+      var selF = vs.selected && vs.view !== 'lot' ? vizFloorIndexOf(geo, vs.selected) : -1;
+      var selD = selF >= 0 && selF === vs.view ? drawnRoom(plan, vs.selected, geo) : null;
+      var canDrag = !!selD && geo.floors[selF].rooms.indexOf(selD) >= 0;
+      stage = '<div class="viz-stage v2d' + (selD ? ' has-sel' : '') + '" data-action="viz-bg">'
+        + '<div class="viz-svg-wrap">' + renderVizSvg(plan, geo, vs.view, vizSvgOpts(plan, geo, costs)) + '</div>'
+        + (canDrag ? '<button type="button" class="viz-hd" data-hd="w" data-action="viz-noop" title="Kéo để đổi chiều ngang" aria-label="Kéo để đổi chiều ngang">↔</button>'
+          + '<button type="button" class="viz-hd" data-hd="h" data-action="viz-noop" title="Kéo để đổi chiều dài" aria-label="Kéo để đổi chiều dài">↕</button>' : '')
+        + (selD ? '<button type="button" class="btn btn-sm viz-zoom" data-action="viz-zoom">' + (vs.zoom ? '⤢ Cả tầng' : '🔍 Phóng to') + '</button>' : '')
+        + '<div class="viz-bubble" hidden></div></div>';
     } else {
       stage = '<div class="viz-stage viz3d" id="viz3d-host"><div class="viz3d-msg">⏳ Đang tải bộ dựng 3D…</div></div>'
         + '<div class="viz3d-ctl">'
@@ -6937,8 +7055,17 @@
       roomList = '<div class="card-title"><span>🚪 ' + esc(listFloor.name) + ' · ' + formatNumber(listFloor.area) + ' m²</span><span class="btn-group">'
         + (noDims ? '<button class="btn btn-sm" data-action="viz-stamp-dims" title="Ghi kích thước ngang × dài đang vẽ vào các phòng chưa có kích thước">📐 Ghi kích thước (' + noDims + ')</button>' : '')
         + '<button class="btn btn-sm" data-action="viz-add-room" data-floor="' + listFloor.id + '">+ Phòng</button></span></div>'
-        + '<p class="hint" style="margin:0 0 8px;">Chạm vào phòng để chọn kích thước <strong>ngang × dài</strong> bằng nút −/+ hoặc kích thước chuẩn.</p>'
+        + '<p class="hint" style="margin:0 0 8px;">Chạm vào phòng trên bản vẽ để chọn — kéo tay nắm <strong>↔ ↕</strong> hoặc bấm −/+ để đổi <strong>ngang × dài</strong>; giữ rồi kéo phòng thả lên phòng khác để đổi chỗ. Chạm ô nét đứt (còn trống, kho, hành lang…) để xem vì sao có.</p>'
         + badShapeBox(plan, geo, listFloor.id)
+        + (function(){
+          // phòng đang vẽ khác kích thước đã chọn (phương án cũ / tầng chật) → sửa 1 chạm: lấy đúng như bản vẽ
+          var off = rs.filter(function(r){ return r.id && r.want && roomSizeInfo(r).kind === 'off'; });
+          if(!off.length) return '';
+          return '<div class="hint-box warn" style="margin-bottom:8px;"><span>⚠ ' + off.length + ' phòng đang vẽ khác kích thước đã chọn: '
+            + off.slice(0, 3).map(function(r){ var i = roomSizeInfo(r); return '<strong>' + esc(r.name) + '</strong> muốn ' + i.want + ', vẽ ' + i.text; }).join('; ') + (off.length > 3 ? '…' : '')
+            + '</span><span class="btn-group"><button class="btn btn-sm btn-primary" data-action="viz-take-drawn" data-floor="' + esc(listFloor.id) + '">📐 Lấy đúng như bản vẽ</button>'
+            + '<button class="btn btn-sm" data-action="viz-relayout-floor" data-floor="' + esc(listFloor.id) + '" title="Bỏ kích thước + ghim của các phòng tầng này, bản vẽ tự chia lại theo diện tích rồi ghi kích thước mới">✨ Tự xếp lại tầng</button></span></div>';
+        })()
         + (function(){
           var sp = floorSpace(listFloor, false);
           if(listFloor.overflow || sp.free < -sp.tol) return '<div class="hint-box warn" style="margin-bottom:8px;"><span>⚠ Các phòng ' + formatNumber(round1(sp.used)) + ' m² lớn hơn chỗ trên tầng (' + formatNumber(round1(sp.cap)) + ' m²) — mặt bằng đang thu nhỏ cho vừa. Giảm kích thước vài phòng hoặc chuyển bớt sang tầng khác.</span></div>';
@@ -6955,7 +7082,8 @@
         + geo.yardFront.concat(geo.yardBack, geo.courts).filter(function(r){ return !r.virtual; }).map(function(r){ return roomTile(r, costs); }).join('')
         + '</div>';
     }
-    if(geo.unplaced.length) roomList += '<p class="hint" style="margin-top:8px;">Chưa gán tầng (không vẽ): ' + geo.unplaced.map(function(r){ return esc(r.name); }).join(', ') + '</p>';
+    if(geo.unplaced.length) roomList += '<div class="f-label" style="margin-top:10px;">Chưa gán tầng (không vẽ) <span class="f-sub">chạm để chọn tầng</span></div><div class="chip-row">'
+      + geo.unplaced.filter(function(r){ return r.id; }).map(function(r){ return chip('⚠ ' + esc(r.name), 'data-action="viz-room" data-id="' + esc(r.id) + '"', false); }).join('') + '</div>';
     var present = {};
     geo.floors.forEach(function(f){ f.rooms.concat(f.openRooms).forEach(function(r){ present[r.type] = true; }); });
     geo.yardFront.concat(geo.yardBack, geo.courts).forEach(function(r){ present[r.type] = true; });
@@ -6988,12 +7116,13 @@
       + (face ? '<p class="hint" style="margin:8px 0 0;">' + esc(facingAdvice(face.key)) + '</p>' : '')
       + '</div>';
     return '<div class="container">'
-      + '<div class="page-toolbar"><div><h2>🗺 Mặt bằng & phối cảnh</h2><p class="hint" style="margin:0;">Bố trí tự động từ danh sách tầng/phòng & diện tích — sửa phòng ở đây hoặc trang Thông tin nhà, hình vẽ tự cập nhật.</p></div>' + modeSeg + '</div>'
+      + '<div class="page-toolbar"><div><h2>🗺 Mặt bằng & phối cảnh</h2><p class="hint viz-desc" style="margin:0;">Bố trí tự động từ danh sách tầng/phòng & diện tích — sửa phòng ở đây hoặc trang Thông tin nhà, hình vẽ tự cập nhật.</p></div>' + modeSeg + '</div>'
       + '<div class="viz-layout"><div class="viz-main card">'
-      + '<div class="viz-toolbar"><div class="chip-row">' + floorChips + '</div>' + colorSeg + '</div>'
+      + '<div class="viz-toolbar"><div class="chip-row viz-floors">' + floorChips + '</div></div>'
       + stage + legend
+      + '<div class="viz-color-row">' + colorSeg + '</div>'
       + (geo.warnings.length ? '<p class="hint">⚠ ' + esc(geo.warnings.join(' · ')) + '</p>' : '')
-      + '</div><div class="viz-side">' + '<div class="card">' + roomList + '</div>' + lotCard + '</div></div>'
+      + '</div><div class="viz-side">' + (roomPanelHtml(plan, geo) || '<div class="card">' + roomList + '</div>') + lotCard + '</div></div>'
       + '</div>';
   }
   // Hình khối nhà (chữ nhật / chữ L / chữ U) + vị trí nhà trên lô — chỉ cần chạm
@@ -7025,7 +7154,10 @@
   function roomTile(r, costs){
     var m = roomMeta(r.type);
     var c = r.id ? costs[r.id] || 0 : 0;
-    return '<button class="room-tile" data-action="viz-room" data-id="' + esc(r.id || '') + '"><span class="rt-ic" style="background:' + m.color + '">' + m.icon + '</span><span class="rt-name">' + esc(r.name) + '</span><span class="rt-sub">' + (r.w ? roomDimLabel(r) + ' · ' : '') + (r.areaKnown === false ? '~' : '') + formatNumber(r.area) + ' m²' + (c ? ' · ' + formatCompactMoney(c) : '') + '</span></button>';
+    var i = r.w ? roomSizeInfo(r) : null;
+    var size = !i ? (r.areaKnown === false ? '~' : '') + formatNumber(r.area) + ' m²'
+      : (i.kind === 'off' ? '⚠ muốn ' + i.want + ' · vẽ ' + i.text : (i.kind === 'auto' ? '≈ ' : '📐 ') + i.text + ' · ' + formatNumber(i.area) + ' m²');
+    return '<button class="room-tile' + (i && i.kind === 'off' ? ' off' : '') + '" data-action="viz-room" data-id="' + esc(r.id || '') + '"><span class="rt-ic" style="background:' + m.color + '">' + m.icon + '</span><span class="rt-name">' + esc(r.name) + '</span><span class="rt-sub">' + size + (c ? ' · ' + formatCompactMoney(c) : '') + '</span></button>';
   }
 
   // Kích thước gợi ý (ngang × dài, m) theo loại phòng — bấm 1 chạm để chọn
@@ -7061,22 +7193,61 @@
     geo.yardFront.concat(geo.yardBack, geo.courts).forEach(pick);
     return found;
   }
+  // Phòng đang vẽ khác kích thước đã chọn → ghi lại đúng như đang vẽ; bộ xếp có thể dịch tiếp nên lặp tới khi
+  // đứng yên (≤ 4 lượt). Kém "ở được" hơn trước thì trả lại như cũ. → {ok, left: số phòng còn lệch}
+  function takeDrawnDims(plan, ids){
+    var keep = plan.rooms.map(function(r){ return {r:r, dimension:r.dimension, area:r.area}; });
+    var liv0 = planLivability(planGeometry(plan)).hard.length, left = ids.length;
+    freezeStair(plan);
+    for(var it = 0; it < 4 && left; it++){
+      var geo = planGeometry(plan);
+      ids.forEach(function(id){
+        var r = findRoom(plan, id), d = r && drawnRoom(plan, id, geo);
+        if(d) { r.dimension = formatRoomDims(round1(d.w), round1(d.h)); r.area = String(round2(round1(d.w) * round1(d.h))); }
+      });
+      var g2 = planGeometry(plan);
+      left = ids.filter(function(id){ var d = drawnRoom(plan, id, g2); return d && d.want && roomSizeInfo(d).kind === 'off'; }).length;
+    }
+    if(planLivability(planGeometry(plan)).hard.length > liv0){ keep.forEach(function(k){ k.r.dimension = k.dimension; k.r.area = k.area; }); return {ok:false, left:ids.length}; }
+    return {ok:true, left:left};
+  }
+  // Chốt vị trí cầu thang đang vẽ (house.stairAt) — không đổi hình, chỉ để lần chỉnh sau cầu thang đứng yên
+  function freezeStair(plan, geo){
+    geo = geo || planGeometry(plan);
+    // giữ 4 số lẻ: bộ xếp nhạy tới vài mm ở ngưỡng chia dải, làm tròn cm có thể đổi cả bố cục
+    if(geo.core && numOrNull(plan.house.stairAt) === null) plan.house.stairAt = String(Math.round((geo.core.y - geo.front) * 1e4) / 1e4);
+  }
   // Ghi kích thước đang vẽ vào các phòng chưa có kích thước (để người dùng chỉnh tiếp bằng −/+)
-  function stampRoomDims(plan, all){
-    var geo = planGeometry(plan), n = 0;
+  // only (tùy chọn): danh sách id phòng cần ghi lại (vd. các phòng đang lệch kích thước của 1 tầng)
+  function stampRoomDims(plan, all, only){
+    var geo = planGeometry(plan), liv0 = planLivability(geo).hard.length, done = [], old = {};
+    freezeStair(plan, geo);
     (plan.rooms || []).forEach(function(r){
+      if(only && only.indexOf(r.id) < 0) return;
       var d = drawnRoom(plan, r.id, geo);
       if(!d || !(d.w > 0.3 && d.h > 0.3)) return;
-      // ghim vị trí hiện tại (cạnh thang / khu chính) để bản vẽ không xáo lại khi đổi kích thước
-      var gf = geo.floors.filter(function(f){ return f.rooms.indexOf(d) >= 0; })[0];
-      if(gf && gf.useCore && d.type !== 'stairs' && !r.slot) r.slot = d.inCell ? 'stair' : 'main';
+      // KHÔNG tự ghim khu (cạnh thang / khu chính): tầng có ghim thì bộ xếp tắt lõi kỹ thuật (WC + giếng
+      // trời chồng thẳng) → phương án tạo từ nhà mẫu mất lối vào / cửa sổ. Ghim chỉ khi người dùng chọn.
       if(!all && parseRoomDims(r.dimension)) return;
+      // ghi đúng như đang vẽ (đóng băng bản vẽ) — phòng méo để hộp "Nắn vuông vắn" xử lý, có báo trước / sau
+      old[r.id] = {d:d, dimension:r.dimension, area:r.area};
       var w = round1(d.w), hh = round1(d.h);
-      // phòng ngủ đang vẽ méo → ghi kích thước đã nắn vuông (bản vẽ xếp lại theo đó)
-      if(roomShapeBad(d.type, w, hh)){ var nd = normalRoomDims(d.type, w, hh, geo.bw); w = nd.w; hh = nd.h; }
-      r.dimension = formatRoomDims(w, hh); r.area = String(round2(w * hh)); n++;
+      r.dimension = formatRoomDims(w, hh); r.area = String(round2(w * hh)); done.push(r);
     });
-    return n;
+    // Bộ xếp đối xử phòng đã có kích thước hơi khác phòng tự chia → ghi xong kiểm lại: phòng nào bị dời
+    // (> 0,3 m) thì trả về tự chia (≤ 3 lượt); vẫn kém "ở được" hơn trước thì bỏ ghi hết — bản vẽ không được đổi
+    function undoStamp(r){ r.dimension = old[r.id].dimension; r.area = old[r.id].area; done.splice(done.indexOf(r), 1); }
+    for(var it = 0; it < 3 && done.length; it++){
+      var g2 = planGeometry(plan);
+      var moved = done.filter(function(r){
+        var a = old[r.id].d, b = drawnRoom(plan, r.id, g2);
+        return !b || Math.abs(a.x - b.x) > 0.3 || Math.abs(a.y - b.y) > 0.3 || Math.abs(a.w - b.w) > 0.3 || Math.abs(a.h - b.h) > 0.3;
+      });
+      if(!moved.length) break;
+      moved.forEach(undoStamp);
+    }
+    if(done.length && planLivability(planGeometry(plan)).hard.length > liv0) done.slice().forEach(undoStamp);
+    return done.length;
   }
 
   // Phòng ngủ / làm việc / cho thuê đang dài hoặc hẹp quá (theo kích thước đã chọn, hoặc theo bản vẽ)
@@ -7119,7 +7290,8 @@
     });
     return any ? base + ' ' + (max + 1) : base;
   }
-  function openAddRoomPicker(plan, floorId){
+  // opts (thêm vào ô trống trên bản vẽ): {dims, place, bw} — chỉ áp dụng khi giữ đúng tầng của ô đó
+  function openAddRoomPicker(plan, floorId, opts){
     var sel = floorId;
     function body(){
       var floors = sortByOrder(plan.floors);
@@ -7134,17 +7306,16 @@
         + '<button type="button" class="add-room-kind" data-add-kind=""><span class="rt-ic">✎</span><span>Tên khác…</span></button></div>';
     }
     function add(name){
-      var t = geoRoomType(name), m = roomMeta(t);
-      var siblings = plan.rooms.filter(function(r){ return (r.floorId || null) === (sel || null); });
-      var pr = (DIM_PRESETS[t] || DIM_PRESETS.other)[1] || (DIM_PRESETS[t] || DIM_PRESETS.other)[0];
-      var r = {id:uid('room'), name:name, floorId:sel || null, area:String(pr ? round2(pr[0] * pr[1]) : (m.area || 10)), order:nextOrder(siblings), dimension: pr ? formatRoomDims(pr[0], pr[1]) : null};
-      plan.rooms.push(r);
-      commitChanges(); render();
-      openRoomSheet(r.id);
-      toast('➕ Đã thêm "' + name + '" — chỉnh kích thước bằng −/+', {action:{label:'Hoàn tác', fn: undo}});
+      var o = opts && sel === floorId ? opts : null, r = addRoomToPlan(plan, sel, name, o);
+      commitChanges();
+      selectVizRoom(r.id);
+      // thêm từ ô trống mà bộ xếp đặt phòng chỗ khác → nói thật
+      var d = o && o.place ? drawnRoom(plan, r.id) : null, v = o && o.place;
+      var hit = d && Math.max(0, Math.min(d.x + d.w, v.x + v.w) - Math.max(d.x, v.x)) * Math.max(0, Math.min(d.y + d.h, v.y + v.h) - Math.max(d.y, v.y)) >= v.w * v.h * 0.5;
+      toast(o && o.place && !hit ? '➕ Đã thêm "' + name + '" — bộ xếp đặt phòng ở vị trí gần nhất có thể; dùng ▲ ▼ để dời' : '➕ Đã thêm "' + name + '" — kéo tay nắm ↔ ↕ hoặc bấm −/+ để chỉnh', {action:{label:'Hoàn tác', fn: undo}});
     }
     openModal({
-      title:'➕ Thêm phòng', cls:'sheet', body: body(),
+      title: opts && opts.dims ? '➕ Thêm phòng vào ô ' + formatNumber(opts.dims.w) + ' × ' + formatNumber(opts.dims.h) + ' m' : '➕ Thêm phòng', cls:'sheet', body: body(),
       actions:[{label:'Đóng', value:'close'}],
       onOpen: function(box){
         box.addEventListener('click', function(e){
@@ -7162,210 +7333,766 @@
     });
   }
 
-  // Bảng chi tiết phòng (bottom sheet trên điện thoại)
-  function openRoomSheet(roomId){
-    var plan = getCurrentPlan();
-    if(!plan) return;
-    var room = plan.rooms.filter(function(r){ return r.id === roomId; })[0];
-    if(!room) return;
-    vizState().selected = roomId;
-    function body(){
-      var r = plan.rooms.filter(function(x){ return x.id === roomId; })[0];
-      if(!r) return '<p>Phòng đã bị xóa.</p>';
-      var t = geoRoomType(r.name), m = roomMeta(t), bundle = ROOM_BUNDLES[t];
-      var items = itemsForScope(plan, 'room', r.id);
-      var total = sumItems(plan, items);
-      var top = items.map(function(it){ return {it:it, a:computeItemAmount(plan, it) || 0}; }).sort(function(a, b){ return b.a - a.a; }).slice(0, 6);
-      var floors = sortByOrder(plan.floors);
-      return '<div class="sheet-hero"><span class="rt-ic big" style="background:' + m.color + '">' + m.icon + '</span><div><div class="sh-name">' + esc(r.name) + '</div><div class="small muted">' + esc(m.label) + ' · ' + esc(scopeLabel(plan, {scopeLevel:'room', scopeId:r.id})) + '</div></div>'
-        + '<div class="sh-total">' + formatCompactMoney(total) + '<span>' + items.length + ' hạng mục</span></div></div>'
-        + dimsBlock(r, t, m)
-        + '<div class="f-label" style="margin-top:12px;">Thuộc tầng</div><div class="chip-row">'
-        + floors.map(function(f){ return chip(esc(f.name), 'data-sheet-floor="' + f.id + '"', r.floorId === f.id); }).join('')
-        + chip('Ngoài nhà / chung', 'data-sheet-floor=""', !r.floorId) + '</div>'
-        + slotBlock(r, t)
-        + (top.length ? '<div class="f-label" style="margin-top:12px;">Chi phí lớn nhất</div><div class="sheet-items">' + top.map(function(x){ return '<div><span>' + (CATEGORY_ICONS[x.it.category] || '•') + ' ' + esc(x.it.name || '(chưa đặt tên)') + '</span><strong>' + formatCompactMoney(x.a) + '</strong></div>'; }).join('') + '</div>' : '')
-        + '<div class="sheet-actions">'
-        + '<button class="btn" data-sheet-act="items">📋 Xem / sửa vật liệu</button>'
-        + (bundle && !items.length ? '<button class="btn btn-primary" data-sheet-act="bundle">✨ Thêm gói ' + esc(bundle.label) + ' (' + bundle.items.length + ')</button>' : '')
-        + '<button class="btn" data-sheet-act="rename">✎ Đổi tên</button>'
-        + '<button class="btn btn-danger" data-sheet-act="delete">🗑 Xóa phòng</button>'
+  // =====================================================================
+  // BẢNG PHÒNG TRÊN TRANG MẶT BẰNG (skill mat-bang-2d)
+  // Không che bản vẽ: cột phải trên máy tính, bảng dưới 2 nấc trên điện thoại.
+  // Mọi thay đổi đi qua vizApply: ghi lịch sử (gộp chuỗi bấm liên tục), báo phòng
+  // khác bị đổi theo + lỗi ở được mới phát sinh; giới hạn kích thước tính trước (maxFit).
+  // =====================================================================
+  function findRoom(plan, id){ return id ? plan.rooms.filter(function(r){ return r.id === id; })[0] || null : null; }
+  function vizFloorIndexOf(geo, roomId){
+    for(var i = 0; i < geo.floors.length; i++){
+      if(geo.floors[i].rooms.concat(geo.floors[i].openRooms).some(function(r){ return r.id === roomId; })) return i;
+    }
+    return -1;
+  }
+  // Kích thước đang dùng để chỉnh: đã chọn → theo bản vẽ → theo diện tích
+  function roomDimsNow(plan, r, geo){
+    var want = parseRoomDims(r.dimension);
+    if(want) return want;
+    var dr = drawnRoom(plan, r.id, geo);
+    if(dr) return {w:round1(dr.w), h:round1(dr.h)};
+    var a0 = numOrNull(r.area) || roomMeta(geoRoomType(r.name)).area || 9, s0 = round1(Math.sqrt(a0));
+    return {w:s0, h:round1(a0 / s0)};
+  }
+  // Bản sao nông của plan với 1 phòng / thứ tự phòng đã đổi — để thử bộ xếp, không ghi lịch sử
+  function previewPlan(plan, roomId, patch){
+    return Object.assign({}, plan, {rooms: plan.rooms.map(function(r){ return r.id === roomId ? Object.assign({}, r, patch) : r; })});
+  }
+  function previewOrder(plan, ids){
+    var pos = {};
+    ids.forEach(function(id, i){ pos[id] = i; });
+    return Object.assign({}, plan, {rooms: plan.rooms.map(function(r){ return pos[r.id] !== undefined ? Object.assign({}, r, {order:pos[r.id]}) : r; })});
+  }
+  function applyOrder(plan, ids){
+    var pos = {};
+    ids.forEach(function(id, i){ pos[id] = i; });
+    plan.rooms.forEach(function(r){ if(pos[r.id] !== undefined) r.order = pos[r.id]; });
+  }
+  // "đặt đúng": mỗi cạnh lệch ≤ 0,3 m (làm tròn / chia phần dư), cho phép xoay — cùng ngưỡng với roomSizeInfo
+  // tol: dò khoảng đặt được dùng 0,09 m (chặt hơn nhãn) để "đặt được 3,6–4,1 m" không tính các cỡ mà bộ
+  // xếp vẫn vẽ 3,9 m nhưng lọt dung sai hiển thị
+  function drawnFits(d, w, h, tol){
+    tol = tol || DIM_TOL;
+    return !!d && ((Math.abs(d.w - w) <= tol && Math.abs(d.h - h) <= tol) || (Math.abs(d.w - h) <= tol && Math.abs(d.h - w) <= tol));
+  }
+  function dimsFit(plan, roomId, w, h, tol){
+    return drawnFits(drawnRoom(previewPlan(plan, roomId, {dimension:formatRoomDims(w, h)}), roomId), w, h, tol);
+  }
+  // Đi từ cạnh hiện tại về phía bound (dir +1 lên / −1 xuống, bước 0,1 m), trả cạnh xa nhất mà tầng vẫn đặt
+  // đúng kích thước (giữ cạnh kia = other). Bộ xếp ~0,3 ms/lần → dò lũy thừa rồi chia đôi (≤ 14 lần thử);
+  // nhớ theo dữ liệu hiện tại. Kích thước hiện tại chưa đặt được → null (chỗ trên tầng không liên tục: cạnh
+  // lõi thang chỉ có đúng 1 bề ngang…), hộp cảnh báo đưa lựa chọn cụ thể đã thử trước.
+  var fitCache = {key:null, map:{}};
+  function edgeFit(plan, roomId, axis, cur, other, bound, dir){
+    var key = JSON.stringify([plan.id, plan.rooms, plan.floors, plan.house]);
+    if(fitCache.key !== key) fitCache = {key:key, map:{}};
+    var ck = [roomId, axis, cur, other, bound, dir].join('|');
+    if(fitCache.map[ck] !== undefined) return fitCache.map[ck];
+    function ok(t){ var v = t / 10; return axis === 'w' ? dimsFit(plan, roomId, v, other, 0.09) : dimsFit(plan, roomId, other, v, 0.09); }
+    function inside(t){ return (end - t) * dir >= 0; }
+    var end = dir > 0 ? Math.floor(bound * 10 + 1e-6) : Math.ceil(bound * 10 - 1e-6), c = Math.round(cur * 10);
+    if(!inside(c)) c = end;
+    if(!ok(c)) return (fitCache.map[ck] = null);
+    var lo = c, hi = null, n = 0;
+    for(var step = 1; lo !== end && n < 12; step *= 2){
+      var nx = inside(lo + dir * step) ? lo + dir * step : end;
+      n++;
+      if(ok(nx)){ lo = nx; continue; }
+      // bộ xếp không đơn điệu (cỡ hơi khác bị kéo thêm để lấp phần dư) → nhìn xa thêm 0,2 / 0,5 m
+      var jump = [nx + 2 * dir, nx + 5 * dir].filter(inside).filter(function(x){ n++; return ok(x); })[0];
+      if(jump !== undefined){ lo = jump; step = 0.5; continue; }
+      hi = nx; break;
+    }
+    while(hi !== null && Math.abs(hi - lo) > 1 && n < 14){
+      var mid = lo + dir * Math.floor(Math.abs(hi - lo) / 2);
+      n++;
+      if(ok(mid)) lo = mid; else hi = mid;
+    }
+    return (fitCache.map[ck] = lo / 10);
+  }
+  // Giới hạn 2 cạnh của phòng trên tầng: max đặt được (+ lý do), min theo luật hình dạng
+  function roomLimits(plan, geo, r, cur){
+    var t = geoRoomType(r.name), lim = ROOM_SHAPE_LIMIT[t];
+    function one(axis){
+      var v = axis === 'w' ? cur.w : cur.h, other = axis === 'w' ? cur.h : cur.w;
+      var house = round1(axis === 'w' ? geo.bw : geo.bl);
+      var shape = lim ? Math.max(lim.s, Math.floor(other * lim.r * 10 + 1e-6) / 10) : 60;
+      // cận dưới: luật hình dạng (phòng ngủ…) và cạnh tối thiểu theo loại phòng (bếp ≥ 2,4 m, WC ≥ 1,2 m…)
+      var min = Math.max(lim ? Math.max(lim.s, Math.ceil(other / lim.r * 10 - 1e-6) / 10) : 0.5, ROOM_MIN_SIDE[t] || 0.5);
+      var cap = Math.min(house, shape), max = edgeFit(plan, r.id, axis, v, other, cap, 1);
+      if(max === null) return {max:null, min:Math.min(min, v), cap:cap, why:null};
+      var lo = edgeFit(plan, r.id, axis, v, other, Math.min(min, v), -1);
+      return {max:max, min:lo, cap:cap, why: max < cap - 0.05 ? 'space' : (shape < house ? 'shape' : 'house'), minWhy: lo > min + 0.05 ? 'space' : 'shape'};
+    }
+    return {w:one('w'), h:one('h'), t:t};
+  }
+  function limitText(axis, L, t, low){
+    var lim = ROOM_SHAPE_LIMIT[t];
+    if(low) return L.minWhy === 'space' ? (axis === 'w' ? 'bề ngang giữ theo cột / hàng phòng (cạnh hành lang, cầu thang)' : 'nhỏ hơn thì bộ xếp kéo dài để lấp chỗ trống')
+      : roomMeta(t).label.toLowerCase() + ' cạnh ≥ ' + formatNumber(Math.max(lim ? lim.s : 0, ROOM_MIN_SIDE[t] || 0.5)) + ' m' + (lim ? ', dài ≤ ' + formatNumber(lim.r) + ' lần cạnh kia' : '') + ' (gõ số nếu vẫn muốn nhỏ hơn)';
+    if(L.why === 'shape') return roomMeta(t).label.toLowerCase() + ' dài ≤ ' + formatNumber(lim.r) + ' lần cạnh kia';
+    if(L.why === 'house') return axis === 'w' ? 'bằng bề ngang nhà' : 'bằng chiều sâu nhà';
+    return axis === 'w' ? 'phần ngang còn lại là cầu thang, hành lang, phòng cùng hàng' : 'phần sâu còn lại đã có phòng khác';
+  }
+
+  // Ghi thay đổi + so bản vẽ trước/sau (phòng khác đổi > 0,15 m, lỗi ở được mới). mergeKey: chuỗi
+  // bấm −/+ liên tục (< 1,6 s) của cùng 1 nút gộp thành 1 bước Hoàn tác, danh sách ảnh hưởng tính từ đầu chuỗi.
+  function drawnSizes(geo){
+    var m = {};
+    function add(r){ if(!r.id || r.virtual) return; var o = m[r.id]; if(!o || r.w * r.h > o.w * o.h) m[r.id] = {w:r.w, h:r.h, name:r.name}; }
+    geo.floors.forEach(function(f){ f.rooms.concat(f.openRooms).forEach(add); });
+    return m;
+  }
+  var vizMerge = {key:null, at:0};
+  function vizApply(plan, roomId, mutate, mergeKey){
+    var vs = vizState(), now = Date.now();
+    var merge = !!mergeKey && vizMerge.key === mergeKey && now - vizMerge.at < 1600 && vs.ripple && vs.ripple.id === roomId;
+    var geo0 = merge ? null : planGeometry(plan);
+    if(geo0) freezeStair(plan, geo0);
+    var base = merge ? vs.ripple.base : drawnSizes(geo0), liv0 = merge ? vs.ripple.liv0 : planLivability(geo0).hard;
+    var res = mutate();
+    var geo1 = planGeometry(plan), after = drawnSizes(geo1), liv1 = planLivability(geo1).hard, list = [];
+    Object.keys(after).forEach(function(id){
+      var a = base[id], b = after[id];
+      if(id === roomId || !a) return;
+      if(Math.abs(a.w - b.w) > 0.15 || Math.abs(a.h - b.h) > 0.15) list.push({id:id, name:b.name, from:{w:round1(a.w), h:round1(a.h)}, to:{w:round1(b.w), h:round1(b.h)}});
+    });
+    var changed = commitChanges();
+    if(changed && merge && undoStack.length) undoStack.pop();
+    vizMerge = {key:mergeKey || null, at:now};
+    vs.ripple = {id:roomId, base:base, liv0:liv0, list:list, issues:liv1.filter(function(x){ return liv0.indexOf(x) < 0; }), shown:false};
+    render();
+    return res;
+  }
+  function applyRoomDims(plan, id, w, h, changed, mergeKey){
+    var r = findRoom(plan, id);
+    if(!r) return;
+    w = round2(clampNum(w, 0.5, 60)); h = round2(clampNum(h, 0.5, 60));
+    // phòng ngủ… không cho dài / hẹp quá: chặn cạnh vừa sửa
+    var t = geoRoomType(r.name), lim = ROOM_SHAPE_LIMIT[t], cd = clampRoomDims(t, w, h, changed);
+    var moved = Math.abs(cd.w - w) > 0.02 || Math.abs(cd.h - h) > 0.02;
+    w = round2(cd.w); h = round2(cd.h);
+    vizApply(plan, id, function(){ r.dimension = formatRoomDims(w, h); r.area = String(round2(w * h)); }, mergeKey);
+    if(moved && lim) toast('📐 ' + roomMeta(t).label + ' dài tối đa ' + formatNumber(lim.r) + ' lần chiều kia, cạnh ngắn ≥ ' + formatNumber(lim.s) + ' m — giữ ở ' + formatNumber(w) + ' × ' + formatNumber(h) + ' m');
+  }
+  // ▲ Lên trước (dir −1, về phía mặt tiền) / ▼ Ra sau (+1): thử chèn phòng vào các vị trí khác trong
+  // thứ tự của tầng, lấy vị trí gần nhất làm phòng thật sự dịch về hướng đó trên bản vẽ (≥ 0,3 m)
+  function moveRoomDepth(plan, roomId, dir){
+    var r = findRoom(plan, roomId), d0 = r && r.floorId ? drawnRoom(plan, roomId) : null;
+    if(!d0) return false;
+    var group = sortByOrder(plan.rooms.filter(function(x){ return x.floorId === r.floorId; }));
+    var idx = group.indexOf(r), others = group.filter(function(x){ return x !== r; }).map(function(x){ return x.id; });
+    var cy0 = d0.y + d0.h / 2, best = null;
+    for(var j = 0; j <= others.length; j++){
+      if(j === idx) continue;
+      var ids = others.slice();
+      ids.splice(j, 0, roomId);
+      var d = drawnRoom(previewOrder(plan, ids), roomId);
+      if(!d) continue;
+      var gain = (d.y + d.h / 2 - cy0) * dir, cost = Math.abs(j - idx);
+      if(gain < 0.3) continue;
+      if(!best || cost < best.cost || (cost === best.cost && gain < best.gain)) best = {ids:ids, cost:cost, gain:gain};
+    }
+    if(!best) return false;
+    applyOrder(plan, best.ids);
+    return true;
+  }
+  // Giữ-kéo phòng thả lên phòng khác cùng tầng: đổi chỗ (thứ tự + khu cạnh thang / khu chính)
+  function swapRoomPlaces(plan, a, b){
+    var ids = sortByOrder(plan.rooms.filter(function(x){ return x.floorId === a.floorId; })).map(function(x){ return x.id; });
+    var i = ids.indexOf(a.id), j = ids.indexOf(b.id);
+    if(i < 0 || j < 0) return;
+    ids[i] = b.id; ids[j] = a.id;
+    applyOrder(plan, ids);
+    var s = a.slot;
+    if(b.slot) a.slot = b.slot; else delete a.slot;
+    if(s) b.slot = s; else delete b.slot;
+  }
+  // Thêm phòng (tên đã đánh số). opts.dims: kích thước ô trống người dùng chạm (dùng nếu đủ cạnh tối
+  // thiểu của loại phòng), opts.place: ô đó → chọn thứ tự để phòng mới nằm gần ô nhất
+  function addRoomToPlan(plan, floorId, name, opts){
+    opts = opts || {};
+    var t = geoRoomType(name), m = roomMeta(t);
+    var siblings = plan.rooms.filter(function(r){ return (r.floorId || null) === (floorId || null); });
+    var ps = DIM_PRESETS[t] || DIM_PRESETS.other, pr = ps[1] || ps[0], dm = pr ? {w:pr[0], h:pr[1]} : null;
+    if(opts.dims && Math.min(opts.dims.w, opts.dims.h) >= (ROOM_MIN_SIDE[t] || 1) - 0.05) dm = {w:opts.dims.w, h:opts.dims.h};
+    if(dm && roomShapeBad(t, dm.w, dm.h)) dm = normalRoomDims(t, dm.w, dm.h, opts.bw);
+    var r = {id:uid('room'), name:name, floorId:floorId || null, area:String(dm ? round2(dm.w * dm.h) : (m.area || 10)), order:nextOrder(siblings), dimension: dm ? formatRoomDims(dm.w, dm.h) : null};
+    plan.rooms.push(r);
+    if(opts.place && floorId){
+      var group = sortByOrder(siblings).map(function(x){ return x.id; }), box = opts.place, best = null;
+      var cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+      for(var j = 0; j <= group.length; j++){
+        var ids = group.slice();
+        ids.splice(j, 0, r.id);
+        var d = drawnRoom(previewOrder(plan, ids), r.id);
+        if(!d) continue;
+        var dist = Math.abs(d.x + d.w / 2 - cx) + Math.abs(d.y + d.h / 2 - cy);
+        if(!best || dist < best.dist - 0.01) best = {dist:dist, ids:ids};
+      }
+      if(best) applyOrder(plan, best.ids);
+    }
+    return r;
+  }
+
+  // Chọn phòng: bảng phòng mở ở nấc thấp, bản vẽ chuyển tới tầng của phòng (gọi từ bản vẽ, thẻ phòng,
+  // 3D, nút 📐 ở trang Thông tin nhà — khi đó chuyển sang trang Mặt bằng và có nút quay lại)
+  function selectVizRoom(id){
+    var plan = getCurrentPlan(), vs = vizState();
+    if(!plan || !findRoom(plan, id)) return;
+    if(state.currentPage !== 'visual'){ vs.back = state.currentPage; state.currentPage = 'visual'; vs.mode = '2d'; }
+    vs.selected = id; vs.virt = null; vs.panel = vs.panel || 'low';
+    if(!vs.ripple || vs.ripple.id !== id) vs.ripple = null;
+    var geo = planGeometry(plan), fi = vizFloorIndexOf(geo, id);
+    // giới hạn / cỡ thử trước trong bảng phòng tính với cầu thang đứng yên như khi ghi thật
+    freezeStair(plan, geo);
+    if(vs.mode === '2d' && fi >= 0 && vs.view !== fi){ vs.view = fi; vs.zoom = false; }
+    render();
+    vizRevealStage();
+  }
+  function openRoomSheet(roomId){ selectVizRoom(roomId); }
+  function vizDeselect(){
+    var vs = vizState();
+    vs.selected = null; vs.virt = null; vs.ripple = null; vs.zoom = false; vs.back = null;
+  }
+  // Điện thoại: cuộn để bản vẽ nằm ngay dưới đầu trang, không bị bảng phòng che
+  function vizRevealStage(){
+    if(window.innerWidth > 760) return;
+    var st = document.querySelector('#app .viz-stage');
+    if(!st) return;
+    var top = st.getBoundingClientRect().top, head = document.querySelector('.sticky-top');
+    var hh = head && getComputedStyle(head).position === 'sticky' ? head.getBoundingClientRect().height : 0;
+    if(top < hh || top > hh + 60) window.scrollTo(0, Math.max(0, window.scrollY + top - hh - 4));
+  }
+
+  // Lệch kích thước: nói rõ cạnh nào thiếu, bao nhiêu, và cho lựa chọn sửa 1 chạm (P7)
+  function offBoxHtml(plan, geo, r, want, dr, L, gf){
+    var f1 = function(v){ return formatNumber(round1(v)); }, why = [], fixes = [];
+    // bản vẽ đang xoay phòng → so cạnh theo hướng gần với lựa chọn hơn
+    var rot = Math.abs(dr.w - want.h) + Math.abs(dr.h - want.w) < Math.abs(dr.w - want.w) + Math.abs(dr.h - want.h);
+    var gw = round1(rot ? dr.h : dr.w), gh = round1(rot ? dr.w : dr.h);
+    var inside = !!gf && gf.rooms.indexOf(dr) >= 0;
+    if(Math.abs(gw - want.w) > DIM_TOL) why.push((gw < want.w ? 'chỗ này chỉ có ' : 'chỗ này rộng ') + f1(gw) + ' m bề ngang' + (gw < want.w && inside && gf.useCore ? ' (cầu thang, lối đi, WC cùng hàng chiếm phần còn lại)' : ''));
+    if(Math.abs(gh - want.h) > DIM_TOL) why.push((gh < want.h ? 'chỉ còn ' : 'phải kéo dài ') + f1(gh) + ' m chiều dài' + (gh < want.h ? ' (phía trước / sau đã có phòng khác)' : ' (lấp phần dư của tầng)'));
+    // lựa chọn sửa 1 chạm: chỉ đưa cỡ đã thử thấy đặt đúng
+    if(inside){
+      if(Math.abs(gw - want.w) > DIM_TOL && dimsFit(plan, r.id, gw, want.h)) fixes.push(chip('↔ Ngang ' + f1(gw) + ' m, giữ dài ' + f1(want.h) + ' m', 'data-action="rp-set" data-w="' + gw + '" data-h="' + want.h + '" data-dim="w"'));
+      if(Math.abs(gh - want.h) > DIM_TOL && dimsFit(plan, r.id, want.w, gh)) fixes.push(chip('↕ Dài ' + f1(gh) + ' m, giữ ngang ' + f1(want.w) + ' m', 'data-action="rp-set" data-w="' + want.w + '" data-h="' + gh + '" data-dim="h"'));
+      if(!fixes.length) fixes.push(chip('📐 Lấy đúng như bản vẽ ' + f1(gw) + ' × ' + f1(gh) + ' m', 'data-action="rp-set" data-w="' + gw + '" data-h="' + gh + '"'));
+    }
+    var sp = gf ? floorSpace(gf, !inside) : null;
+    if(!why.length) why.push(sp && sp.free < -sp.tol ? 'các phòng lớn hơn chỗ trên tầng ' + f1(-sp.free) + ' m²' : 'các phòng đã chốt kích thước trên tầng chèn nhau');
+    var A = want.w * want.h;
+    geo.floors.forEach(function(f){
+      if(!gf || f.id === gf.id || fixes.length >= 4) return;
+      var s2 = floorSpace(f, false);
+      if(s2.free >= A - 0.3) fixes.push(chip('⇅ Chuyển sang ' + esc(f.name) + ' (trống ' + f1(s2.free) + ' m²)', 'data-action="rp-floor" data-floor="' + f.id + '"'));
+    });
+    var note = sp && sp.free > sp.tol && (gw < want.w - DIM_TOL || gh < want.h - DIM_TOL) ? ' Tầng còn trống ' + f1(sp.free) + ' m² nhưng không liền thành một khối đủ ' + (gw < want.w - DIM_TOL ? 'bề ngang' : 'chiều dài') + '.' : '';
+    return '<div class="hint-box warn rp-off"><span><strong>⚠ Chưa đặt được đúng ' + f1(want.w) + ' × ' + f1(want.h) + ' m</strong> — bản vẽ đang là ' + f1(dr.w) + ' × ' + f1(dr.h) + ' m: ' + esc(why.join('; ')) + '.' + esc(note) + '</span>'
+      + (fixes.length ? '<div class="chip-row">' + fixes.join('') + '</div>' : '') + '</div>';
+  }
+  function rpHead(icon, color, name, sub){
+    var vs = vizState();
+    return '<div class="rp-head"><button type="button" class="rp-grip" data-action="viz-panel-size" aria-label="' + (vs.panel === 'high' ? 'Thu nhỏ bảng' : 'Mở rộng bảng') + '"></button>'
+      + '<span class="rt-ic" style="background:' + color + '">' + icon + '</span>'
+      + '<div class="rp-title"><div class="sh-name">' + esc(name) + '</div><div class="small muted">' + sub + '</div></div>'
+      + '<button type="button" class="btn btn-ghost icon-only" data-action="viz-deselect" title="Bỏ chọn (Esc)" aria-label="Đóng">✕</button></div>';
+  }
+  function rpWrap(html){
+    return '<div class="card room-panel' + (vizState().panel === 'high' ? ' high' : '') + '"><div class="rp-body" data-scroll-key="room-panel">' + html + '</div></div>';
+  }
+  function roomPanelHtml(plan, geo){
+    var vs = vizState();
+    if(vs.virt) return virtualPanelHtml(plan, geo, vs.virt);
+    var r = findRoom(plan, vs.selected);
+    if(!r) return '';
+    var t = geoRoomType(r.name), m = roomMeta(t), want = parseRoomDims(r.dimension), bundle = ROOM_BUNDLES[t];
+    var dr = drawnRoom(plan, r.id, geo), fi = vizFloorIndexOf(geo, r.id), gf = fi >= 0 ? geo.floors[fi] : null;
+    var inside = !!(gf && dr && gf.rooms.indexOf(dr) >= 0);
+    var cur = roomDimsNow(plan, r, geo), L = inside ? roomLimits(plan, geo, r, cur) : null;
+    var info = dr ? roomSizeInfo(dr) : null, f1 = function(v){ return formatNumber(round1(v)); };
+    var items = itemsForScope(plan, 'room', r.id), total = sumItems(plan, items);
+    var h = rpHead(m.icon, m.color, r.name, esc(m.label) + ' · ' + esc(gf ? gf.name : scopeLabel(plan, {scopeLevel:'room', scopeId:r.id})) + (total ? ' · ' + formatCompactMoney(total) : ''));
+    // thanh công cụ: vị trí trước / sau, xoay, hoàn tác
+    var tools = [];
+    if(vs.back) tools.push('<button type="button" class="btn btn-sm" data-action="viz-back">← ' + (vs.back === 'house' ? 'Thông tin nhà' : 'Quay lại') + '</button>');
+    if(inside && t !== 'stairs'){
+      tools.push('<button type="button" class="btn btn-sm" data-action="rp-move" data-dir="-1" title="Đưa về phía mặt tiền">▲ Lên trước</button>');
+      tools.push('<button type="button" class="btn btn-sm" data-action="rp-move" data-dir="1" title="Đưa ra phía sau nhà">▼ Ra sau</button>');
+    } else if(inside && geo.core){
+      // cầu thang chung mọi tầng: dời 0,5 m mỗi lần, hoặc để bản vẽ tự đặt lại theo diện tích các phòng
+      tools.push('<button type="button" class="btn btn-sm" data-action="rp-stair" data-dir="-1" title="Dời cầu thang về phía mặt tiền 0,5 m">▲ Dời lên trước</button>');
+      tools.push('<button type="button" class="btn btn-sm" data-action="rp-stair" data-dir="1" title="Dời cầu thang ra phía sau 0,5 m">▼ Dời ra sau</button>');
+      if(numOrNull(plan.house.stairAt) !== null) tools.push('<button type="button" class="btn btn-sm" data-action="rp-stair" data-dir="auto" title="Bản vẽ tự đặt cầu thang theo diện tích phòng trước / sau">✨ Tự đặt</button>');
+    }
+    if(want) tools.push('<button type="button" class="btn btn-sm" data-action="rp-rotate" title="Đổi ngang ↔ dài">⇄ Xoay</button>');
+    if(undoStack.length) tools.push('<button type="button" class="btn btn-sm" data-action="undo" title="Hoàn tác (Ctrl+Z)">↶ Hoàn tác</button>');
+    tools.push('<button type="button" class="btn btn-sm rp-mob" data-action="viz-panel-size">' + (vs.panel === 'high' ? '▾ Thu gọn' : '▴ Mở rộng') + '</button>');
+    h += '<div class="rp-tools">' + tools.join('') + '</div>';
+    // kích thước ngang × dài: −/+ (nhấn giữ để lặp), ô gõ số, giới hạn hiện trước
+    function stepper(axis){
+      var v = axis === 'w' ? cur.w : cur.h, Lx = L && L[axis] && L[axis].max !== null ? L[axis] : null;
+      var max = Lx ? Math.max(Lx.max, 0.5) : 60, min = L ? L[axis].min : 0.5, at = v >= max - 0.001, atLo = v <= min + 0.001;
+      // khoảng đặt được (thử trước bằng bộ xếp) + lý do khi chạm đầu khoảng (P5)
+      var lim = !Lx ? '' : (max - min < 0.05 ? 'cố định ' + f1(max) + ' m' : 'đặt được ' + f1(min) + '–' + f1(max) + ' m')
+        + (at && atLo ? ' · ' + esc(limitText(axis, Lx, t, true)) : (at ? ' · ' + esc(limitText(axis, Lx, t)) : (atLo ? ' · ' + esc(limitText(axis, Lx, t, true)) : '')));
+      return '<div class="stepper"><span class="st-label">' + (axis === 'w' ? '↔ Ngang' : '↕ Dài') + '</span><div class="st-box">'
+        + '<button type="button" class="st-btn" data-action="rp-dim" data-dim="' + axis + '" data-step="-0.1" data-repeat="1"' + (atLo ? ' disabled' : '') + ' aria-label="Giảm">−</button>'
+        + '<input type="text" inputmode="decimal" class="st-input" data-ui="rp-dim" data-id="' + axis + '" value="' + esc(formatNumInput(v)) + '">'
+        + '<span class="st-unit">m</span>'
+        + '<button type="button" class="st-btn" data-action="rp-dim" data-dim="' + axis + '" data-step="0.1" data-repeat="1"' + (at ? ' disabled' : '') + ' aria-label="Tăng">+</button></div>'
+        + (lim ? '<span class="st-lim' + (at || atLo ? ' at' : '') + '">' + lim + '</span>' : '')
         + '</div>';
     }
-    function dimsBlock(r, t, m){
-      var geo = planGeometry(plan), want = parseRoomDims(r.dimension), dr = drawnRoom(plan, r.id, geo);
-      var cur = want || (dr ? {w:round1(dr.w), h:round1(dr.h)} : null);
-      if(!cur){ var a0 = numOrNull(r.area) || m.area || 9, s0 = round1(Math.sqrt(a0)); cur = {w:s0, h:round1(a0 / s0)}; }
+    h += '<div class="dims-row' + (want ? '' : ' unset') + '">' + stepper('w') + '<span class="dims-x">×</span>' + stepper('h') + '</div>';
+    if(info && info.kind === 'off') h += offBoxHtml(plan, geo, r, want, dr, L, gf);
+    else if(want) h += '<div class="dims-meta"><span class="dims-area">= <strong>' + formatNumber(round2(want.w * want.h)) + ' m²</strong></span>' + (dr ? '<span class="ok-text small">📐 đặt đúng kích thước</span>' : '') + '</div>';
+    else h += '<div class="dims-meta"><span class="small muted">Chưa chốt kích thước — bản vẽ tự chia' + (dr ? ' ≈ ' + f1(dr.w) + ' × ' + f1(dr.h) + ' m (' + f1(dr.w * dr.h) + ' m²)' : '') + '. Bấm −/+ là chốt.</span>' + (dr ? '<button type="button" class="link-btn" data-action="rp-pin">📌 Chốt kích thước này</button>' : '') + '</div>';
+    // phòng khác bị đổi theo + lỗi ở được mới (P6)
+    var rp = vs.ripple && vs.ripple.id === r.id ? vs.ripple : null;
+    if(rp && (rp.list.length || rp.issues.length)){
+      h += '<div class="hint-box rp-ripple"><span>'
+        + (rp.list.length ? '↺ Phòng khác đổi theo: ' + rp.list.slice(0, 4).map(function(x){ return '<strong>' + esc(x.name) + '</strong> ' + f1(x.from.w) + ' × ' + f1(x.from.h) + ' → ' + f1(x.to.w) + ' × ' + f1(x.to.h) + ' m'; }).join('; ') + (rp.list.length > 4 ? '…' : '') : '')
+        + (rp.issues.length ? (rp.list.length ? '<br>' : '') + '⚠ Mới phát sinh: ' + rp.issues.slice(0, 3).map(esc).join('; ') : '')
+        + '</span>' + (rp.list.length ? '<button type="button" class="btn btn-sm" data-action="rp-keep">Giữ ' + (rp.list.length > 1 ? rp.list.length + ' phòng kia' : esc(rp.list[0].name)) + ' như cũ</button>' : '') + '</div>';
+    }
+    // góp ý công năng + chuẩn TCVN ngay dưới cặp số (P12)
+    var tips = [], dimsChk = want || cur;
+    var sh = Math.min(dimsChk.w, dimsChk.h), lg = Math.max(dimsChk.w, dimsChk.h), ms = ROOM_MIN_SIDE[t], mr = ROOM_MAX_RATIO[t] || 1.9;
+    if(ms && sh < ms - 0.05) tips.push('Cạnh ' + formatNumber(sh) + ' m hơi hẹp cho ' + m.label.toLowerCase() + ' (nên ≥ ' + formatNumber(ms) + ' m)');
+    if(sh > 0 && lg / sh > mr + 0.6) tips.push('Phòng dài gấp ' + formatNumber(round1(lg / sh)) + ' lần bề rộng — khó kê đồ, nên vuông vắn hơn');
+    if(tips.length) h += '<div class="dims-tips">' + tips.map(function(x){ return '<div>💡 ' + esc(x) + '</div>'; }).join('') + '</div>';
+    var std = roomStd(t, r.name), aNow = want ? want.w * want.h : (dr ? dr.w * dr.h : numOrNull(r.area));
+    if(std){
+      var low = std.min && aNow !== null && aNow < std.min - 0.05, high = std.max && aNow !== null && aNow > std.max + 0.05;
+      h += '<div class="dims-std' + (low ? ' bad' : (high ? ' high' : '')) + '">📐 Chuẩn' + (std.tcvn ? ' <strong>TCVN 13967:2024</strong>' : '') + ': ' + esc(std.use)
+        + (low ? ' — <strong>phòng này ' + f1(aNow) + ' m² nhỏ hơn mức tối thiểu ' + formatNumber(std.min) + ' m²</strong>' : '')
+        + (high ? ' — phòng này ' + f1(aNow) + ' m², rộng hơn mức thường dùng (≤ ' + formatNumber(std.max) + ' m²)' : '') + '</div>';
+    }
+    // chỗ trên tầng
+    if(gf){
+      var sp = floorSpace(gf, !inside), free = sp.free;
+      // nới / thu theo chiều dài — chỉ mời khi đã thử thấy đặt đúng
+      var fillH = want && Math.abs(free) > 0.5 && cur.w * cur.h + free > 1 ? Math.max(0.5, Math.floor((cur.w * cur.h + free) / cur.w * 10) / 10) : null;
+      if(fillH !== null && inside && !dimsFit(plan, r.id, cur.w, fillH)) fillH = null;
+      h += '<div class="dims-usage' + (free < -sp.tol ? ' over' : '') + '">' + esc(gf.name) + (inside ? '' : ' (phần ngoài trời)') + ': các phòng ' + f1(sp.used) + ' / ' + f1(sp.cap) + ' m²'
+        + (free > sp.tol ? ' · <strong>còn trống ' + f1(free) + ' m²</strong>' : (free < -sp.tol ? ' · <strong>vượt ' + f1(-free) + ' m²</strong>' : ' · vừa khít'))
+        + (fillH !== null ? ' <button type="button" class="link-btn" data-action="rp-set" data-w="' + cur.w + '" data-h="' + fillH + '" data-dim="h">' + (free > 0 ? '⤢ Nới phòng này lấp chỗ trống (dài ' + f1(fillH) + ' m)' : '⤡ Thu phòng này cho vừa (dài ' + f1(fillH) + ' m)') + '</button>' : '') + '</div>';
+    }
+    // cỡ chuẩn: cỡ không vừa tầng thì mờ (P5)
+    var presets = (DIM_PRESETS[t] || DIM_PRESETS.other).map(function(p){
+      var on = want && Math.abs(want.w - p[0]) < 0.05 && Math.abs(want.h - p[1]) < 0.05;
+      var fit = !inside || on || dimsFit(plan, r.id, p[0], p[1]);
+      return chip(formatNumber(p[0]) + ' × ' + formatNumber(p[1]) + ' <span class="chip-n">' + formatNumber(round1(p[0] * p[1])) + ' m²</span>', 'data-action="rp-set" data-w="' + p[0] + '" data-h="' + p[1] + '"' + (fit ? '' : ' title="Tầng này không đủ chỗ cho cỡ này"'), on, fit ? '' : 'chip-off');
+    }).join('');
+    if(L && L.w.max > cur.w + 0.05) presets += chip('↔ Rộng hết cỡ ' + f1(L.w.max) + ' m', 'data-action="rp-set" data-w="' + L.w.max + '" data-h="' + cur.h + '" data-dim="w"', false);
+    h += '<div class="f-label" style="margin-top:12px;">Cỡ thường dùng</div><div class="chip-row dims-presets">' + presets + '</div>';
+    if(!want){
       var area = numOrNull(r.area);
-      var presets = (DIM_PRESETS[t] || DIM_PRESETS.other).map(function(p){
-        var on = want && Math.abs(want.w - p[0]) < 0.05 && Math.abs(want.h - p[1]) < 0.05;
-        return chip(formatNumber(p[0]) + ' × ' + formatNumber(p[1]) + ' <span class="chip-n">' + formatNumber(round1(p[0] * p[1])) + ' m²</span>', 'data-sheet-dims="' + p[0] + 'x' + p[1] + '"', on);
-      }).join('');
-      var off = want && dr && (Math.abs(dr.w - want.w) + Math.abs(dr.h - want.h) > 0.45) && (Math.abs(dr.w - want.h) + Math.abs(dr.h - want.w) > 0.45);
-      var gf = dr ? geo.floors.filter(function(f){ return f.rooms.indexOf(dr) >= 0 || f.openRooms.indexOf(dr) >= 0; })[0] : null;
-      var fullW = gf ? round1(geo.bw) : (dr ? round1(geo.lotW) : 0);
-      // góp ý công năng: cạnh ngắn quá hẹp / phòng quá dài
-      var tips = [];
-      if(want){
-        var sh = Math.min(want.w, want.h), lg = Math.max(want.w, want.h), ms = ROOM_MIN_SIDE[t], mr = ROOM_MAX_RATIO[t] || 1.9;
-        if(ms && sh < ms - 0.05) tips.push('Cạnh ' + formatNumber(sh) + ' m hơi hẹp cho ' + m.label.toLowerCase() + ' (nên ≥ ' + formatNumber(ms) + ' m)');
-        if(sh > 0 && lg / sh > mr + 0.6) tips.push('Phòng dài gấp ' + formatNumber(round1(lg / sh)) + ' lần bề rộng — khó kê đồ, nên vuông vắn hơn');
-      }
-      // chuẩn diện tích theo công năng (TCVN 13967:2024 Bảng 3 + thực tế thiết kế)
-      var std = roomStd(t, r.name), aNow = want ? want.w * want.h : area, stdHtml = '';
-      if(std){
-        var low = std.min && aNow !== null && aNow < std.min - 0.05, high = std.max && aNow !== null && aNow > std.max + 0.05;
-        stdHtml = '<div class="dims-std' + (low ? ' bad' : (high ? ' high' : '')) + '">📐 Chuẩn' + (std.tcvn ? ' <strong>TCVN 13967:2024</strong>' : '') + ': ' + esc(std.use)
-          + (low ? ' — <strong>phòng này ' + formatNumber(round1(aNow)) + ' m² nhỏ hơn mức tối thiểu ' + formatNumber(std.min) + ' m²</strong>' : '')
-          + (high ? ' — phòng này ' + formatNumber(round1(aNow)) + ' m², rộng hơn mức thường dùng (≤ ' + formatNumber(std.max) + ' m²)' : '') + '</div>';
-      }
-      // diện tích tầng: tổng phòng đã chọn so với chỗ có trên bản vẽ
-      var usage = '';
-      if(gf){
-        var sp = floorSpace(gf, gf.rooms.indexOf(dr) < 0), used = sp.used, free = sp.free;
-        usage = '<div class="dims-usage' + (free < -sp.tol ? ' over' : '') + '">' + esc(gf.name) + (gf.rooms.indexOf(dr) < 0 ? ' (phần ngoài trời)' : '') + ': các phòng ' + formatNumber(round1(used)) + ' / ' + formatNumber(round1(sp.cap)) + ' m²'
-          + (free > sp.tol ? ' · <strong>còn trống ' + formatNumber(round1(free)) + ' m²</strong>' : (free < -sp.tol ? ' · <strong>vượt ' + formatNumber(round1(-free)) + ' m²</strong>' : ' · vừa khít'))
-          + (want && Math.abs(free) > 0.5 && cur.w * cur.h + free > 1 ? ' <button type="button" class="link-btn" data-sheet-act="fill-free" data-free="' + round2(free) + '">' + (free > 0 ? '⤢ Nới phòng này lấp chỗ trống' : '⤡ Thu phòng này cho vừa') + '</button>' : '') + '</div>';
-      }
-      return '<div class="f-label">Kích thước phòng <span class="f-sub">ngang × dài</span></div>'
-        + '<div class="dims-row' + (want ? '' : ' unset') + '">'
-        + stepperHtml({action:'sheet-dim', attrs:'data-dim="w"', value:cur.w, unit:'m', step:0.1, min:0.5, max:60, label:'↔ Ngang', input:'data-sheet-input="w"'})
-        + '<span class="dims-x">×</span>'
-        + stepperHtml({action:'sheet-dim', attrs:'data-dim="h"', value:cur.h, unit:'m', step:0.1, min:0.5, max:60, label:'↕ Dài', input:'data-sheet-input="h"'})
-        + '</div>'
-        + '<div class="dims-meta">'
-        + (want
-          ? '<span class="dims-area">= <strong>' + formatNumber(round2(want.w * want.h)) + ' m²</strong></span><button type="button" class="link-btn" data-sheet-act="rotate">⇄ Xoay</button><button type="button" class="link-btn" data-sheet-act="clear-dims">✕ Bỏ kích thước</button>'
-          : '<span class="small muted">Chưa chọn — bản vẽ đang tự chia theo diện tích' + (dr ? ' (≈ ' + formatNumber(round1(dr.w)) + ' × ' + formatNumber(round1(dr.h)) + ' m)' : '') + '. Bấm −/+ hoặc chọn nhanh bên dưới.</span>')
-        + '</div>'
-        + (off ? '<div class="hint-box warn" style="margin:6px 0 0;"><span>⚠ Tầng không đủ chỗ đặt đúng ' + formatNumber(want.w) + ' × ' + formatNumber(want.h) + ' m — bản vẽ đang là ' + formatNumber(round1(dr.w)) + ' × ' + formatNumber(round1(dr.h)) + ' m. Thử giảm kích thước các phòng khác hoặc kiểm tra diện tích tầng.</span></div>' : '')
-        + (tips.length ? '<div class="dims-tips">' + tips.map(function(x){ return '<div>💡 ' + esc(x) + '</div>'; }).join('') + '</div>' : '')
-        + stdHtml
-        + usage
-        + '<div class="chip-row dims-presets">' + presets
-        + (fullW ? chip('↔ Hết ngang ' + formatNumber(fullW) + ' m', 'data-sheet-act="full-width" data-w="' + fullW + '"', want && Math.abs(want.w - fullW) < 0.05) : '')
-        + '</div>'
-        + '<div class="f-label" style="margin-top:12px;">Diện tích' + (want ? ' <span class="f-sub">giữ ngang, tự tính dài</span>' : '') + '</div>'
-        + stepperHtml({action:'sheet-step', attrs:'data-field="area"', value:area !== null ? area : m.area, unit:'m²', step:0.5, min:0.5, max:500, input:'data-sheet-input="area"'})
-        + (area === null ? '<p class="hint" style="margin:4px 0 0;">Chưa nhập — đang dùng mặc định ' + m.area + ' m² để vẽ.</p>' : '');
+      h += '<div class="f-label" style="margin-top:12px;">Diện tích <span class="f-sub">khi chưa chốt kích thước</span></div>'
+        + stepperHtml({action:'rp-area', attrs:'data-repeat="1"', value:area !== null ? area : m.area, unit:'m²', step:0.5, min:0.5, max:500, input:'data-ui="rp-area"'});
     }
-    function slotBlock(r, t){
-      if(!r.floorId || t === 'stairs') return '';
-      var geo = planGeometry(plan), d = drawnRoom(plan, r.id, geo);
-      var gf = d ? geo.floors.filter(function(f){ return f.rooms.indexOf(d) >= 0; })[0] : null;
-      if(!gf || !gf.useCore) return '';
-      return '<div class="f-label" style="margin-top:12px;">Vị trí trên tầng</div><div class="chip-row">'
-        + chip('✨ Tự xếp', 'data-sheet-slot=""', !r.slot)
-        + chip('🪜 Cạnh cầu thang', 'data-sheet-slot="stair"', r.slot === 'stair')
-        + chip('🏠 Khu chính', 'data-sheet-slot="main"', r.slot === 'main')
-        + '</div>' + (r.slot ? '<p class="hint" style="margin:4px 0 0;">Đã ghim — phòng không ghim trên tầng này sẽ ở khu chính.</p>' : '');
+    // khu trên tầng (chỉ khi tầng có lõi thang)
+    if(r.floorId && t !== 'stairs' && gf && gf.useCore && inside){
+      var slot = floorAutoPinned(plan, r.floorId) ? null : r.slot;
+      h += '<div class="f-label" style="margin-top:12px;">Khu trên tầng</div><div class="chip-row">'
+        + chip('✨ Tự xếp', 'data-action="rp-slot" data-slot=""', !slot)
+        + chip('🪜 Cạnh cầu thang', 'data-action="rp-slot" data-slot="stair"', slot === 'stair')
+        + chip('🏠 Khu chính', 'data-action="rp-slot" data-slot="main"', slot === 'main') + '</div>'
+        + '<p class="hint" style="margin:4px 0 0;">' + (slot ? 'Đã ghim — phòng không ghim trên tầng này sẽ ở khu chính; tầng có ghim thì WC / giếng trời không còn tự xếp theo trục kỹ thuật.' : 'Ghim khu sẽ tắt việc tự xếp WC / giếng trời chồng thẳng theo trục kỹ thuật của tầng.') + '</p>';
     }
-    function refresh(box){ var b = box.querySelector('.modal-body'); if(b) b.innerHTML = body(); }
-    function curRoom(){ return plan.rooms.filter(function(x){ return x.id === roomId; })[0]; }
-    function setArea(box, v){
-      var r = curRoom();
-      if(!r) return;
-      v = clampNum(v, 0.5, 500);
-      var want = parseRoomDims(r.dimension);
-      if(want){ setDims(box, want.w, v / want.w, 'h'); return; }
-      r.area = String(round1(v));
-      commitChanges(); render(); refresh(box);
-    }
-    function setDims(box, w, h, changed){
-      var r = curRoom();
-      if(!r) return;
-      w = round2(clampNum(w, 0.5, 60)); h = round2(clampNum(h, 0.5, 60));
-      // phòng ngủ… không cho dài / hẹp quá: tự chỉnh cạnh còn lại
-      var t = geoRoomType(r.name), lim = ROOM_SHAPE_LIMIT[t], cd = clampRoomDims(t, w, h, changed);
-      var moved = Math.abs(cd.w - w) > 0.02 || Math.abs(cd.h - h) > 0.02;
-      w = round2(cd.w); h = round2(cd.h);
-      r.dimension = formatRoomDims(w, h); r.area = String(round2(w * h));
-      commitChanges(); render(); refresh(box);
-      if(moved && lim) toast('📐 ' + roomMeta(t).label + ' không được dài quá ' + formatNumber(lim.r) + ' lần chiều ngang, cạnh ngắn ≥ ' + formatNumber(lim.s) + ' m — giữ ở ' + formatNumber(w) + ' × ' + formatNumber(h) + ' m');
-    }
-    function dimsNow(r){
-      var want = parseRoomDims(r.dimension);
-      if(want) return want;
-      var dr = drawnRoom(plan, r.id);
-      if(dr) return {w:round1(dr.w), h:round1(dr.h)};
-      var a0 = numOrNull(r.area) || roomMeta(geoRoomType(r.name)).area || 9, s0 = round1(Math.sqrt(a0));
-      return {w:s0, h:round1(a0 / s0)};
-    }
-    openModal({
-      title: '🚪 Chi tiết phòng', cls:'sheet', body: body(),
-      actions: [{label:'Xong', value:'close', primary:true}],
-      onClose: function(){ vizState().selected = null; requestRender(); },
-      onOpen: function(box){
-        box.addEventListener('click', function(e){
-          var r = plan.rooms.filter(function(x){ return x.id === roomId; })[0];
-          if(!r) return;
-          var sd = e.target.closest('[data-action="sheet-dim"]');
-          if(sd){
-            var dn = dimsNow(r), stp = Number(sd.dataset.step);
-            if(sd.dataset.dim === 'w') setDims(box, dn.w + stp, dn.h, 'w'); else setDims(box, dn.w, dn.h + stp, 'h');
-            return;
-          }
-          var pz = e.target.closest('[data-sheet-dims]');
-          if(pz){ var pd = parseRoomDims(pz.dataset.sheetDims); if(pd) setDims(box, pd.w, pd.h); return; }
-          var st = e.target.closest('[data-action="sheet-step"]');
-          if(st){
-            var cur = numOrNull(r.area);
-            if(cur === null) cur = roomMeta(geoRoomType(r.name)).area;
-            setArea(box, cur + Number(st.dataset.step));
-            return;
-          }
-          var fl = e.target.closest('[data-sheet-floor]');
-          if(fl){ r.floorId = fl.dataset.sheetFloor || null; delete r.slot; commitChanges(); render(); refresh(box); return; }
-          var sl = e.target.closest('[data-sheet-slot]');
-          if(sl){
-            var sv = sl.dataset.sheetSlot || null;
-            if(sv) r.slot = sv; else delete r.slot;
-            // bỏ ghim một phòng → bỏ ghim cả tầng để bản vẽ tự xếp lại
-            if(!sv) plan.rooms.forEach(function(x){ if(x.floorId === r.floorId) delete x.slot; });
-            commitChanges(); render(); refresh(box); return;
-          }
-          var act = e.target.closest('[data-sheet-act]');
-          if(!act) return;
-          var a = act.dataset.sheetAct;
-          if(a === 'fill-free'){ var dn3 = dimsNow(r), na = dn3.w * dn3.h + Number(act.dataset.free); setDims(box, dn3.w, Math.max(0.5, Math.floor(na / dn3.w * 10) / 10), 'h'); return; }
-          if(a === 'full-width'){
-            var fw = Number(act.dataset.w), dn2 = dimsNow(r), ar = dn2.w * dn2.h, lfw = ROOM_SHAPE_LIMIT[geoRoomType(r.name)];
-            // phòng ngủ hết bề ngang: tăng chiều dài cho khỏi thành dải hẹp
-            setDims(box, fw, Math.max(0.5, round1(ar / fw), lfw ? Math.ceil(fw / lfw.r * 10) / 10 : 0), 'w'); return;
-          }
-          if(a === 'rotate'){ var rw = parseRoomDims(r.dimension); if(rw) setDims(box, rw.h, rw.w); return; }
-          if(a === 'clear-dims'){ r.dimension = null; commitChanges(); render(); refresh(box); toast('Đã bỏ kích thước — bản vẽ tự chia theo diện tích', {action:{label:'Hoàn tác', fn: undo}}); return; }
-          if(a === 'items'){ closeModal(true); state.expandedRooms[roomId] = true; goTo({page:'house', rowId:roomId}); }
-          else if(a === 'bundle'){
-            var n = addBundleToScope(plan, geoRoomType(r.name), 'room', roomId);
-            commitChanges(); render(); refresh(box);
-            toast('✨ Đã thêm ' + n + ' hạng mục mẫu', {action:{label:'Hoàn tác', fn: undo}});
-          } else if(a === 'rename'){
-            closeModal(true);
-            uiPrompt('Đổi tên phòng', r.name).then(function(v){
-              if(v === null || v === undefined) return;
-              r.name = String(v).trim() || r.name; commitChanges(); render(); openRoomSheet(roomId);
-            });
-          } else if(a === 'delete'){
-            closeModal(true);
-            var ids = itemsForScope(plan, 'room', roomId).map(function(it){ return it.id; });
-            plan.items = plan.items.filter(function(it){ return ids.indexOf(it.id) === -1; });
-            plan.rooms = plan.rooms.filter(function(x){ return x.id !== roomId; });
-            commitChanges(); render();
-            toast('🗑 Đã xóa phòng "' + r.name + '"' + (ids.length ? ' và ' + ids.length + ' hạng mục' : ''), {action:{label:'Hoàn tác', fn: undo}});
-          }
-        });
-        box.addEventListener('change', function(e){
-          var inp = e.target.closest('[data-sheet-input]');
-          if(!inp) return;
-          var v = parseSmartNumber(inp.value), r = curRoom();
-          if(v === null || !r) return;
-          var k = inp.dataset.sheetInput;
-          if(k === 'w' || k === 'h'){ var dn = dimsNow(r); if(k === 'w') setDims(box, v, dn.h, 'w'); else setDims(box, dn.w, v, 'h'); }
-          else setArea(box, v);
-        });
-      }
+    if(t === 'stairs' && r.floorId) h += '<p class="hint" style="margin:8px 0 0;">Cầu thang chồng thẳng qua mọi tầng — đổi kích thước ở đây là đổi lõi thang của cả nhà.</p>';
+    h += '<div class="f-label" style="margin-top:12px;">Thuộc tầng <span class="f-sub">hoặc giữ-kéo phòng thả lên tên tầng</span></div><div class="chip-row">'
+      + sortByOrder(plan.floors).map(function(f){ return chip(esc(f.name), 'data-action="rp-floor" data-floor="' + f.id + '"', r.floorId === f.id); }).join('')
+      + chip('Ngoài nhà / chung', 'data-action="rp-floor" data-floor=""', !r.floorId) + '</div>';
+    var top = items.map(function(it){ return {it:it, a:computeItemAmount(plan, it) || 0}; }).sort(function(a, b){ return b.a - a.a; }).slice(0, 5);
+    if(top.length) h += '<div class="f-label" style="margin-top:12px;">Chi phí lớn nhất · ' + items.length + ' hạng mục</div><div class="sheet-items">' + top.map(function(x){ return '<div><span>' + (CATEGORY_ICONS[x.it.category] || '•') + ' ' + esc(x.it.name || '(chưa đặt tên)') + '</span><strong>' + formatCompactMoney(x.a) + '</strong></div>'; }).join('') + '</div>';
+    h += '<div class="sheet-actions">'
+      + '<button type="button" class="btn" data-action="rp-items">📋 Vật liệu</button>'
+      + (bundle && !items.length ? '<button type="button" class="btn btn-primary" data-action="rp-bundle">✨ Thêm gói ' + esc(bundle.label) + ' (' + bundle.items.length + ')</button>' : '')
+      + '<button type="button" class="btn" data-action="rp-rename">✎ Đổi tên</button>'
+      + (want ? '<button type="button" class="btn" data-action="rp-clear" title="Bản vẽ tự chia theo diện tích">✕ Bỏ kích thước</button>' : '')
+      + '<button type="button" class="btn btn-danger" data-action="rp-delete">🗑 Xóa phòng</button>'
+      + '</div>';
+    return rpWrap(h);
+  }
+
+  // Ô bản vẽ tự thêm (hành lang, kho lõi kỹ thuật, còn trống…): giải thích vì sao có + việc làm được (P10)
+  var VIRT_INFO = [
+    [/còn trống/i, 'Phần dư: mọi phòng trên tầng đã chốt kích thước mà tầng còn rộng hơn tổng các phòng.', true],
+    [/sảnh|không gian chung/i, 'Phần sàn chưa thuộc phòng nào — bản vẽ để làm sảnh / chỗ sinh hoạt chung.', true],
+    [/kho|tủ âm/i, 'Góc nhỏ còn lại trong lõi kỹ thuật (cạnh WC chồng tầng, giếng trời) — thường làm kho hoặc tủ âm tường.', true],
+    [/hành lang|lối đi/i, 'Lối đi bắt buộc để mọi phòng có cửa ra cầu thang / cửa chính mà không phải đi xuyên phòng ngủ hay WC (rộng ≥ 1 m theo TCVN). Bớt hoặc thu nhỏ phòng thì lối đi ngắn lại.', false],
+    [/cầu thang/i, 'Cầu thang tự thêm vì nhà nhiều tầng nhưng danh sách phòng chưa có "Cầu thang". Cầu thang chồng thẳng qua mọi tầng.', false],
+    [/thông thoáng|giếng/i, 'Khoảng trống lấy sáng, thông gió cho các phòng giữa nhà — không xây kín.', false]
+  ];
+  // Phòng thật chung phần lớn 1 cạnh với ô v → kích thước mới nếu nới phòng đó lấp ô
+  function vizNeighbors(plan, gf, v){
+    var E = 0.06, out = [];
+    gf.rooms.forEach(function(r){
+      if(!r.id || r.virtual || !findRoom(plan, r.id)) return;
+      var cur = r.want ? {w:r.want.w, h:r.want.h} : {w:round1(r.w), h:round1(r.h)};
+      var rot = r.want && Math.abs(r.w - r.want.h) + Math.abs(r.h - r.want.w) < Math.abs(r.w - r.want.w) + Math.abs(r.h - r.want.h) - 0.01;
+      var sideV = (Math.abs(r.x + r.w - v.x) < E || Math.abs(v.x + v.w - r.x) < E) ? Math.min(r.y + r.h, v.y + v.h) - Math.max(r.y, v.y) : 0;
+      var sideH = (Math.abs(r.y + r.h - v.y) < E || Math.abs(v.y + v.h - r.y) < E) ? Math.min(r.x + r.w, v.x + v.w) - Math.max(r.x, v.x) : 0;
+      // cạnh chung phải phủ gần hết cạnh phòng (nới ra thì lấp đúng ô) và phần lớn cạnh ô
+      var dx = round1(v.w), dy = round1(v.h), o = null;
+      if(sideV >= r.h * 0.8 - E && sideV >= v.h * 0.6) o = {w: rot ? cur.w : round1(cur.w + dx), h: rot ? round1(cur.h + dx) : cur.h, share:sideV};
+      else if(sideH >= r.w * 0.8 - E && sideH >= v.w * 0.6) o = {w: rot ? round1(cur.w + dy) : cur.w, h: rot ? cur.h : round1(cur.h + dy), share:sideH};
+      // bỏ gợi ý làm phòng dài ngoằng
+      if(o && Math.max(o.w, o.h) / Math.min(o.w, o.h) <= (ROOM_MAX_RATIO[r.type] || 1.9) + 0.3){ o.id = r.id; o.name = r.name; out.push(o); }
     });
+    return out.sort(function(a, b){ return b.share - a.share; });
+  }
+  // Thử thêm phòng (không ghi lịch sử) → phòng mới có phủ ≥ 60% ô v không
+  function addLandsIn(plan, floorId, name, v, opts){
+    var pc = Object.assign({}, plan, {rooms: plan.rooms.map(function(r){ return Object.assign({}, r); })});
+    var d = drawnRoom(pc, addRoomToPlan(pc, floorId, name, opts).id);
+    if(!d) return false;
+    var ox = Math.max(0, Math.min(d.x + d.w, v.x + v.w) - Math.max(d.x, v.x)), oy = Math.max(0, Math.min(d.y + d.h, v.y + v.h) - Math.max(d.y, v.y));
+    return ox * oy >= v.w * v.h * 0.6;
+  }
+  function virtualPanelHtml(plan, geo, v){
+    var m = roomMeta(v.type), f1 = function(x){ return formatNumber(round1(x)); };
+    var info = VIRT_INFO.filter(function(x){ return x[0].test(v.name || ''); })[0], gf = geo.floors[v.floor];
+    var h = rpHead(m.icon, m.color, v.name || 'Khu vực tự vẽ', 'Khu vực bản vẽ tự thêm · ' + f1(v.w) + ' × ' + f1(v.h) + ' m (' + f1(v.w * v.h) + ' m²)');
+    h += '<p class="rp-why">' + esc(info ? info[1] : 'Khu vực bản vẽ tự thêm, không phải phòng trong danh sách.') + '</p>';
+    var acts = [], dims = 'data-w="' + Math.floor(v.w * 10 + 1e-6) / 10 + '" data-h="' + Math.floor(v.h * 10 + 1e-6) / 10 + '"';
+    if(gf && /cầu thang/i.test(v.name || '')) acts.push('<button type="button" class="btn btn-primary" data-action="rv-add" data-kind="Cầu thang" ' + dims + '>＋ Thêm cầu thang để chỉnh kích thước</button>');
+    if(gf && (!info || info[2]) && v.w >= 0.8 && v.h >= 0.8){
+      // chỉ mời "biến thành Kho" khi thử trước thấy phòng Kho mới nằm đúng ô này
+      var kho = /kho|tủ âm/i.test(v.name || '') && addLandsIn(plan, gf.id, 'Kho', v, {dims:{w:Math.floor(v.w * 10 + 1e-6) / 10, h:Math.floor(v.h * 10 + 1e-6) / 10}, place:v, bw:geo.bw});
+      if(kho) acts.push('<button type="button" class="btn btn-primary" data-action="rv-add" data-kind="Kho" ' + dims + '>＋ Biến thành phòng Kho</button>');
+      acts.push('<button type="button" class="btn' + (kho ? '' : ' btn-primary') + '" data-action="rv-add" ' + dims + '>＋ Thêm phòng vào đây (' + f1(v.w) + ' × ' + f1(v.h) + ' m)</button>');
+    }
+    // ô nhỏ cũng lấp được bằng cách nới phòng bên cạnh
+    if(gf && (!info || info[2])){
+      vizNeighbors(plan, gf, v).slice(0, 2).forEach(function(n){
+        acts.push('<button type="button" class="btn" data-action="rv-grow" data-id="' + esc(n.id) + '" data-w="' + n.w + '" data-h="' + n.h + '">⤢ Nới ' + esc(n.name) + ' → ' + f1(n.w) + ' × ' + f1(n.h) + ' m</button>');
+      });
+    }
+    if(acts.length) h += '<div class="sheet-actions">' + acts.join('') + '</div>';
+    return rpWrap(h);
+  }
+
+  // Thao tác của bảng phòng / ô tự vẽ — trả về true nếu đã xử lý
+  function vizPanelAction(action, d, plan){
+    var vs = vizState(), r = findRoom(plan, vs.selected), geo, cur;
+    switch(action){
+      case 'rv-add': {
+        var v = vs.virt, gf0 = v ? planGeometry(plan).floors[v.floor] : null;
+        if(!v || !gf0) return true;
+        var o = {dims:{w:Number(d.w), h:Number(d.h)}, place:v, bw:planGeometry(plan).bw};
+        if(d.kind){
+          var nr = addRoomToPlan(plan, gf0.id, nextRoomName(plan, d.kind), o);
+          commitChanges(); selectVizRoom(nr.id);
+          toast('➕ Đã thêm "' + nr.name + '"', {action:{label:'Hoàn tác', fn: undo}});
+        } else openAddRoomPicker(plan, gf0.id, o);
+        return true;
+      }
+      case 'rv-grow': {
+        var nb = findRoom(plan, d.id);
+        if(!nb) return true;
+        vs.virt = null; vs.selected = nb.id;
+        applyRoomDims(plan, nb.id, Number(d.w), Number(d.h), null, null);
+        return true;
+      }
+    }
+    if(!r) return action.indexOf('rp-') === 0;
+    var t = geoRoomType(r.name);
+    switch(action){
+      case 'rp-dim': {
+        geo = planGeometry(plan); cur = roomDimsNow(plan, r, geo);
+        var ax = d.dim, stp = Number(d.step), nv = round1((ax === 'w' ? cur.w : cur.h) + stp), dr = drawnRoom(plan, r.id, geo), fi = vizFloorIndexOf(geo, r.id);
+        if(dr && fi >= 0 && geo.floors[fi].rooms.indexOf(dr) >= 0){
+          // không bước ra ngoài khoảng đặt được (nút đã mờ; phím mũi tên / nhấn giữ cũng dừng ở đó)
+          var L = roomLimits(plan, geo, r, cur), c0 = ax === 'w' ? cur.w : cur.h;
+          if(stp > 0 && L[ax].max !== null) nv = Math.min(nv, Math.max(c0, L[ax].max));
+          if(stp < 0) nv = Math.max(nv, Math.min(c0, L[ax].min));
+          if(Math.abs(nv - c0) < 0.001) return true;
+        }
+        applyRoomDims(plan, r.id, ax === 'w' ? nv : cur.w, ax === 'w' ? cur.h : nv, ax, 'dim' + r.id + ax + (stp > 0 ? '+' : '-'));
+        return true;
+      }
+      case 'rp-set': applyRoomDims(plan, r.id, Number(d.w), Number(d.h), d.dim || null, null); return true;
+      case 'rp-rotate': { var rw = parseRoomDims(r.dimension); if(rw) applyRoomDims(plan, r.id, rw.h, rw.w, null, null); return true; }
+      case 'rp-pin': {
+        // chốt đúng như đang vẽ (không qua luật hình dạng, để bản vẽ đứng yên)
+        var pd = drawnRoom(plan, r.id), pw = round1(pd.w), ph = round1(pd.h);
+        vizApply(plan, r.id, function(){ r.dimension = formatRoomDims(pw, ph); r.area = String(round2(pw * ph)); });
+        return true;
+      }
+      case 'rp-clear':
+        vizApply(plan, r.id, function(){ r.dimension = null; });
+        toast('Đã bỏ kích thước — bản vẽ tự chia theo diện tích', {action:{label:'Hoàn tác', fn: undo}});
+        return true;
+      case 'rp-area': {
+        var a0 = numOrNull(r.area);
+        if(a0 === null) a0 = roomMeta(t).area;
+        vizApply(plan, r.id, function(){ r.area = String(round1(clampNum(a0 + Number(d.step), 0.5, 500))); }, 'area' + r.id);
+        return true;
+      }
+      case 'rp-keep': {
+        var rp = vs.ripple;
+        if(!rp || rp.id !== r.id) return true;
+        vizApply(plan, r.id, function(){
+          rp.list.forEach(function(x){ var o2 = findRoom(plan, x.id); if(o2){ o2.dimension = formatRoomDims(x.from.w, x.from.h); o2.area = String(round2(x.from.w * x.from.h)); } });
+        });
+        return true;
+      }
+      case 'rp-move': {
+        var moved = vizApply(plan, r.id, function(){ return moveRoomDepth(plan, r.id, Number(d.dir)); });
+        if(!moved) toast(Number(d.dir) < 0 ? 'Phòng đã ở vị trí trước nhất bộ xếp cho phép trên tầng này' : 'Phòng đã ở vị trí sau nhất bộ xếp cho phép trên tầng này');
+        return true;
+      }
+      case 'rp-stair': {
+        geo = planGeometry(plan);
+        if(!geo.core) return true;
+        var y0 = geo.core.y - geo.front;
+        vizApply(plan, r.id, function(){
+          if(d.dir === 'auto') delete plan.house.stairAt;
+          else plan.house.stairAt = String(round2(clampNum(y0 + Number(d.dir) * 0.5, 0, geo.bl - geo.core.h)));
+        }, d.dir === 'auto' ? null : 'stair' + d.dir);
+        return true;
+      }
+      case 'rp-slot': {
+        var sv = d.slot || null;
+        vizApply(plan, r.id, function(){
+          // tầng đang bị ghim tự động (bản cũ) → gỡ hết trước, chỉ giữ lựa chọn của người dùng
+          if(floorAutoPinned(plan, r.floorId)) plan.rooms.forEach(function(x){ if(x.floorId === r.floorId) delete x.slot; });
+          if(sv) r.slot = sv; else delete r.slot;
+          // bỏ ghim một phòng → bỏ ghim cả tầng để bản vẽ tự xếp lại
+          if(!sv) plan.rooms.forEach(function(x){ if(x.floorId === r.floorId) delete x.slot; });
+        });
+        return true;
+      }
+      case 'rp-floor': {
+        var to = d.floor || null;
+        if(to === (r.floorId || null)) return true;
+        var gi = planGeometry(plan).floors.map(function(f){ return f.id; }).indexOf(to);
+        if(vs.mode === '2d') vs.view = gi >= 0 ? gi : 'lot';
+        vs.zoom = false;
+        vizApply(plan, r.id, function(){
+          r.order = nextOrder(plan.rooms.filter(function(x){ return x !== r && (x.floorId || null) === to; }));
+          r.floorId = to; delete r.slot;
+        });
+        return true;
+      }
+      case 'rp-items': vizDeselect(); state.expandedRooms[r.id] = true; goTo({page:'house', rowId:r.id}); return true;
+      case 'rp-bundle': {
+        var n = addBundleToScope(plan, t, 'room', r.id);
+        commitChanges(); render();
+        toast('✨ Đã thêm ' + n + ' hạng mục mẫu', {action:{label:'Hoàn tác', fn: undo}});
+        return true;
+      }
+      case 'rp-rename':
+        uiPrompt('Đổi tên phòng', r.name).then(function(v){
+          if(v === null || v === undefined) return;
+          r.name = String(v).trim() || r.name; commitChanges(); render();
+        });
+        return true;
+      case 'rp-delete': {
+        var ids = itemsForScope(plan, 'room', r.id).map(function(it){ return it.id; });
+        plan.items = plan.items.filter(function(it){ return ids.indexOf(it.id) === -1; });
+        plan.rooms = plan.rooms.filter(function(x){ return x.id !== r.id; });
+        vizDeselect();
+        commitChanges(); render();
+        toast('🗑 Đã xóa phòng "' + r.name + '"' + (ids.length ? ' và ' + ids.length + ' hạng mục' : ''), {action:{label:'Hoàn tác', fn: undo}});
+        return true;
+      }
+    }
+    return false;
+  }
+  // Ô gõ số trong bảng phòng (ngang / dài / diện tích)
+  function vizPanelInput(t, plan){
+    var vs = vizState(), r = plan && findRoom(plan, vs.selected), v = parseSmartNumber(t.value);
+    if(!r || v === null) return;
+    if(t.dataset.ui === 'rp-area'){ vizApply(plan, r.id, function(){ r.area = String(round1(clampNum(v, 0.5, 500))); }); return; }
+    var cur = roomDimsNow(plan, r);
+    if(t.dataset.id === 'w') applyRoomDims(plan, r.id, v, cur.h, 'w', null); else applyRoomDims(plan, r.id, cur.w, v, 'h', null);
+  }
+
+  // ---------- Thao tác trực tiếp trên bản vẽ: tay nắm ↔ ↕, giữ-kéo đổi chỗ, chuyển động ----------
+  var vizDragEndAt = 0, vizFlip = {key:null, pos:{}};
+  function vizSvgOpts(plan, geo, costs){
+    var vs = vizState(), o = {colorBy:vs.colorBy, costs:costs, showCost:vs.colorBy === 'cost', selected:vs.selected, flash:{}};
+    if(vs.ripple && !vs.ripple.shown) vs.ripple.list.forEach(function(x){ o.flash[x.id] = true; });
+    if(vs.zoom && vs.selected && vs.view !== 'lot' && vizFloorIndexOf(geo, vs.selected) === vs.view){
+      var dr = drawnRoom(plan, vs.selected, geo);
+      if(dr) o.focus = {x:dr.x, y:dr.y, w:dr.w, h:dr.h};
+    }
+    return o;
+  }
+  function placeHandles(stage){
+    var cell = stage.querySelector('.viz-room.sel .viz-cell'), hs = stage.querySelectorAll('.viz-hd');
+    var sr = stage.getBoundingClientRect(), rr = cell ? cell.getBoundingClientRect() : null;
+    Array.prototype.forEach.call(hs, function(b){
+      if(!rr){ b.style.visibility = 'hidden'; return; }
+      var x = b.dataset.hd === 'w' ? rr.right : rr.left + rr.width / 2, y = b.dataset.hd === 'w' ? rr.top + rr.height / 2 : rr.top;
+      b.style.left = (x - sr.left - stage.clientLeft) + 'px'; b.style.top = (y - sr.top - stage.clientTop) + 'px'; b.style.visibility = 'visible';
+    });
+  }
+  function svgPt(svg, x, y){ var p = svg.createSVGPoint(); p.x = x; p.y = y; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+  function vizStageInit(){
+    var stage = document.querySelector('#app .viz-stage.v2d');
+    if(!stage) return;
+    placeHandles(stage);
+    stage.addEventListener('pointerdown', function(e){
+      if(e.button > 0) return;
+      var hd = e.target.closest('.viz-hd');
+      if(hd){ vizHandleDrag(e, stage, hd.dataset.hd); return; }
+      var g = e.target.closest('.viz-room.sel');
+      if(g && g.dataset.id) vizLongPress(e, stage, g.dataset.id);
+    });
+    // chuyển động ngắn khi phòng đổi chỗ để mắt theo kịp (G12)
+    var plan = getCurrentPlan(), vs = vizState(), key = plan.id + '|' + vs.view + '|' + !!vs.zoom, pos = {};
+    Array.prototype.forEach.call(stage.querySelectorAll('.viz-room[data-id]'), function(g){
+      var id = g.dataset.id, c = g.querySelector('.viz-cell');
+      if(!id || pos[id] || !c) return;
+      pos[id] = {x:+c.getAttribute('x') + c.getAttribute('width') / 2, y:+c.getAttribute('y') + c.getAttribute('height') / 2, g:g};
+    });
+    if(vizFlip.key === key) Object.keys(pos).forEach(function(id){
+      var o = vizFlip.pos[id], n = pos[id];
+      if(!o || !n.g.animate) return;
+      var dx = o.x - n.x, dy = o.y - n.y;
+      if(Math.abs(dx) + Math.abs(dy) > 0.2) n.g.animate([{transform:'translate(' + dx + 'px,' + dy + 'px)'}, {transform:'translate(0px,0px)'}], {duration:240, easing:'ease-out'});
+    });
+    Object.keys(pos).forEach(function(id){ delete pos[id].g; });
+    vizFlip = {key:key, pos:pos};
+    if(vs.ripple) vs.ripple.shown = true;
+  }
+  // Kéo tay nắm: bản vẽ xếp lại theo từng khung hình (chưa ghi), thả tay = 1 bước Hoàn tác (P3)
+  function vizHandleDrag(e, stage, hd){
+    var plan = getCurrentPlan(), vs = vizState(), r = plan && findRoom(plan, vs.selected);
+    if(!r) return;
+    e.preventDefault();
+    var geo = planGeometry(plan), dr = drawnRoom(plan, r.id, geo), cur = roomDimsNow(plan, r, geo);
+    // phòng đang vẽ xoay so với ngang × dài đã chọn → cạnh trên bản vẽ ứng với cạnh kia
+    var rot = !!(dr && dr.want) && Math.abs(dr.w - dr.want.h) + Math.abs(dr.h - dr.want.w) < Math.abs(dr.w - dr.want.w) + Math.abs(dr.h - dr.want.h) - 0.01;
+    var axis = rot ? (hd === 'w' ? 'h' : 'w') : hd, L = roomLimits(plan, geo, r, cur), t = L.t;
+    var svg = stage.querySelector('svg'), wrap = stage.querySelector('.viz-svg-wrap'), bubble = stage.querySelector('.viz-bubble');
+    var p0 = svgPt(svg, e.clientX, e.clientY), start = axis === 'w' ? cur.w : cur.h, val = start, raf = 0;
+    var hiV = L[axis].max !== null ? Math.max(start, L[axis].max) : Math.max(start, L[axis].cap);
+    var opts = vizSvgOpts(plan, geo, roomCostMap(plan));
+    opts.flash = {};
+    stage.classList.add('dragging');
+    try { e.target.setPointerCapture(e.pointerId); } catch(x){ /* không bắt buộc */ }
+    function move(ev){
+      var p = svgPt(stage.querySelector('svg'), ev.clientX, ev.clientY);
+      var delta = hd === 'w' ? p.x - p0.x : p0.y - p.y;
+      var v = clampNum(Math.round((start + delta) * 10) / 10, Math.min(start, L[axis].min), hiV);
+      var at = delta > 0 && L[axis].max !== null && v >= L[axis].max - 0.001, atLo = delta < 0 && v <= L[axis].min + 0.001, sr = stage.getBoundingClientRect();
+      bubble.textContent = (axis === 'w' ? '↔ Ngang ' : '↕ Dài ') + formatNumber(v) + ' m' + (at ? ' · tối đa — ' + limitText(axis, L[axis], t) : (atLo ? ' · nhỏ nhất — ' + limitText(axis, L[axis], t, true) : ''));
+      bubble.hidden = false;
+      bubble.style.left = (ev.clientX - sr.left) + 'px'; bubble.style.top = (ev.clientY - sr.top - 28) + 'px';
+      if(v === val) return;
+      val = v;
+      var pp = previewPlan(plan, r.id, {dimension:formatRoomDims(axis === 'w' ? v : cur.w, axis === 'w' ? cur.h : v)});
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(function(){ wrap.innerHTML = renderVizSvg(pp, planGeometry(pp), vs.view, opts); placeHandles(stage); });
+    }
+    function up(){
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      cancelAnimationFrame(raf);
+      stage.classList.remove('dragging'); bubble.hidden = true; vizDragEndAt = Date.now();
+      if(Math.abs(val - start) > 0.001) applyRoomDims(plan, r.id, axis === 'w' ? val : cur.w, axis === 'w' ? cur.h : val, axis, null);
+    }
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  }
+  // Giữ 0,4 s trên phòng đang chọn rồi kéo: thả lên phòng khác = đổi chỗ, thả lên tên tầng = chuyển tầng (P8)
+  function vizLongPress(e, stage, id){
+    var x0 = e.clientX, y0 = e.clientY, timer = null;
+    function mv(ev){ if(Math.abs(ev.clientX - x0) + Math.abs(ev.clientY - y0) > 8) stop(); }
+    function stop(){ clearTimeout(timer); window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', stop); window.removeEventListener('pointercancel', stop); }
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', stop); window.addEventListener('pointercancel', stop);
+    timer = setTimeout(function(){ stop(); vizMoveDrag(stage, id, x0, y0); }, 400);
+  }
+  function vizMoveDrag(stage, id, x0, y0){
+    var plan = getCurrentPlan(), r = plan && findRoom(plan, id), vs = vizState();
+    if(!r || !r.floorId) return;
+    var geo = planGeometry(plan), ghost = document.createElement('div'), target = null;
+    ghost.className = 'viz-ghost';
+    document.body.appendChild(ghost);
+    stage.classList.add('dragging');
+    if(navigator.vibrate){ try { navigator.vibrate(12); } catch(x){ /* không hỗ trợ */ } }
+    function find(x, y){
+      ghost.style.display = 'none';
+      var el = document.elementFromPoint(x, y);
+      ghost.style.display = '';
+      if(!el || !el.closest) return null;
+      var g = el.closest('.viz-room[data-id]');
+      if(g && g.dataset.id && g.dataset.id !== id){
+        var o = findRoom(plan, g.dataset.id);
+        if(o && o.floorId === r.floorId) return {kind:'room', el:g, room:o};
+      }
+      var c = el.closest('[data-action="viz-view"]');
+      if(c && c.dataset.view !== 'lot'){
+        var gf = geo.floors[Number(c.dataset.view)];
+        if(gf && gf.id !== r.floorId) return {kind:'floor', el:c, floorId:gf.id, view:Number(c.dataset.view), name:gf.name};
+      }
+      return null;
+    }
+    function show(x, y){
+      ghost.style.left = x + 'px'; ghost.style.top = y + 'px';
+      var tg = find(x, y);
+      if(target && (!tg || tg.el !== target.el)) target.el.classList.remove('drop-on');
+      if(tg) tg.el.classList.add('drop-on');
+      target = tg;
+      ghost.textContent = '⇄ ' + r.name + (tg ? (tg.kind === 'room' ? ' ↔ ' + tg.room.name : ' → ' + tg.name) : ' — thả lên phòng khác hoặc tên tầng');
+    }
+    show(x0, y0);
+    function mv(ev){ ev.preventDefault(); show(ev.clientX, ev.clientY); }
+    function up(){
+      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      ghost.remove(); stage.classList.remove('dragging'); vizDragEndAt = Date.now();
+      if(!target) return;
+      target.el.classList.remove('drop-on');
+      if(target.kind === 'room'){
+        var other = target.room;
+        vizApply(plan, id, function(){ swapRoomPlaces(plan, r, other); });
+        toast('⇄ Đã đổi chỗ ' + r.name + ' và ' + other.name, {action:{label:'Hoàn tác', fn: undo}});
+      } else {
+        var tg = target;
+        if(vs.mode === '2d'){ vs.view = tg.view; vs.zoom = false; }
+        vizApply(plan, id, function(){
+          r.order = nextOrder(plan.rooms.filter(function(x){ return x !== r && x.floorId === tg.floorId; }));
+          r.floorId = tg.floorId; delete r.slot;
+        });
+        toast('⇅ Đã chuyển ' + r.name + ' sang ' + tg.name, {action:{label:'Hoàn tác', fn: undo}});
+      }
+    }
+    window.addEventListener('pointermove', mv, {passive:false}); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  }
+  // Nút −/+ có data-repeat: nhấn giữ để lặp (mỗi lần bấm vẽ lại trang → tìm lại nút theo thuộc tính)
+  var repeatTimer = null;
+  function stopRepeat(){ clearTimeout(repeatTimer); repeatTimer = null; }
+  function startRepeat(e){
+    var b = e.target.closest && e.target.closest('[data-repeat]');
+    if(!b || b.disabled || e.button > 0) return;
+    var sel = '#app [data-action="' + b.dataset.action + '"][data-step="' + b.dataset.step + '"]' + (b.dataset.dim ? '[data-dim="' + b.dataset.dim + '"]' : ''), n = 0;
+    stopRepeat();
+    repeatTimer = setTimeout(function tick(){
+      var el = document.querySelector(sel);
+      if(!el || el.disabled){ stopRepeat(); return; }
+      el.click(); n++;
+      repeatTimer = setTimeout(tick, n > 8 ? 60 : 120);
+    }, 450);
+  }
+  // Phím tắt khi đang chọn phòng trên trang Mặt bằng: ←/→ ngang, ↑/↓ dài (Shift = 0,5 m), Esc, Delete
+  function vizKeydown(e){
+    if(state.currentPage !== 'visual') return false;
+    var vs = vizState(), plan = getCurrentPlan();
+    if(e.key === 'Escape' && (vs.selected || vs.virt)){ e.preventDefault(); vizDeselect(); render(); return true; }
+    var r = plan && findRoom(plan, vs.selected);
+    if(!r) return false;
+    if(e.key === 'Delete'){ e.preventDefault(); vizPanelAction('rp-delete', {}, plan); return true; }
+    var map = {ArrowRight:['w', 1], ArrowLeft:['w', -1], ArrowUp:['h', 1], ArrowDown:['h', -1]}[e.key];
+    if(!map) return false;
+    e.preventDefault();
+    vizPanelAction('rp-dim', {dim:map[0], step:String(map[1] * (e.shiftKey ? 0.5 : 0.1))}, plan);
+    return true;
   }
 
   // =====================================================================
@@ -7386,6 +8113,8 @@
     if(V3.raf){ cancelAnimationFrame(V3.raf); V3.raf = 0; }
   }
   function visualAfterRender(){
+    document.body.classList.toggle('room-panel-open', !!document.querySelector('#app .room-panel'));
+    vizStageInit();
     var host = document.getElementById('viz3d-host');
     if(!host){ stop3D(); return; }
     var plan = getCurrentPlan();
@@ -10361,6 +11090,7 @@
   function handleExtraAction(action, d, btn, plan){
     var vs;
     if(action.indexOf('gd-') === 0 && guideAction(action, d, plan)) return true;
+    if(plan && (action.indexOf('rp-') === 0 || action.indexOf('rv-') === 0)) return vizPanelAction(action, d, plan);
     switch(action){
       case 'go-templates': state.currentPlanId = null; state.currentPage = 'templates'; state.selected = {}; render(); window.scrollTo({top:0}); return true;
       case 'open-cloud': openCloudModal(); return true;
@@ -10379,7 +11109,7 @@
         render(); return true;
       }
       case 'tpl-open': openTemplateDetail(d.key); return true;
-      case 'room-dims': if(d.id) openRoomSheet(d.id); return true;
+      case 'room-dims': if(d.id) selectVizRoom(d.id); return true;
       case 'step-field': {
         if(!plan) return true;
         var obj = d.entity === 'house' ? plan.house : (d.entity === 'floor' ? plan.floors : plan.rooms).filter(function(x){ return x.id === d.id; })[0];
@@ -10404,10 +11134,19 @@
       case 'viz-view': {
         vs = vizState();
         var idx = d.view === 'lot' ? 'lot' : Number(d.view);
-        if(vs.mode === '2d') vs.view = idx;
+        if(vs.mode === '2d'){ if(vs.view !== idx){ vs.selected = null; vs.virt = null; vs.ripple = null; vs.zoom = false; } vs.view = idx; }
         else { var g = plan ? plan.floors.length : 0; vs.upto = (idx === 'lot' || idx >= g - 1) ? null : idx; }
         render(); return true;
       }
+      case 'viz-noop': return true;
+      case 'viz-bg':
+        vs = vizState();
+        if(Date.now() - vizDragEndAt < 450 || !(vs.selected || vs.virt)) return true;
+        vizDeselect(); render(); return true;
+      case 'viz-deselect': vizDeselect(); render(); return true;
+      case 'viz-panel-size': vs = vizState(); vs.panel = vs.panel === 'high' ? 'low' : 'high'; render(); return true;
+      case 'viz-zoom': vs = vizState(); vs.zoom = !vs.zoom; render(); return true;
+      case 'viz-back': { vs = vizState(); var bk = vs.back, bid = vs.selected; vizDeselect(); goTo(bk === 'house' && bid ? {page:'house', rowId:bid} : {page:bk || 'house'}); return true; }
       case 'viz-color': vizState().colorBy = d.color; render(); return true;
       case 'viz-shape':
         if(!plan) return true;
@@ -10437,6 +11176,26 @@
         toast(nd ? '📐 Đã ghi kích thước cho ' + nd + ' phòng — chạm vào phòng để chỉnh −/+' : 'Các phòng đều đã có kích thước', {action: nd ? {label:'Hoàn tác', fn: undo} : null});
         return true;
       }
+      case 'viz-take-drawn': {
+        if(!plan) return true;
+        var tg = planGeometry(plan), tf = tg.floors.filter(function(f){ return f.id === d.floor; })[0];
+        var ids = tf ? tf.rooms.concat(tf.openRooms).filter(function(r){ return r.id && r.want && roomSizeInfo(r).kind === 'off'; }).map(function(r){ return r.id; }) : [];
+        var tr = takeDrawnDims(plan, ids);
+        commitChanges(); render();
+        toast(tr.ok ? '📐 Đã ghi kích thước đang vẽ cho ' + ids.length + ' phòng' + (tr.left ? ' — còn ' + tr.left + ' phòng lệch (tầng chật, xem từng phòng)' : '') : 'Không ghi được — ghi vào làm mặt bằng kém "ở được" hơn', {action: tr.ok ? {label:'Hoàn tác', fn: undo} : null});
+        return true;
+      }
+      case 'viz-relayout-floor': {
+        if(!plan) return true;
+        var rf = plan.rooms.filter(function(r){ return r.floorId === d.floor; });
+        // giữ nguyên vị trí cầu thang (chung mọi tầng) để các tầng khác không xáo theo
+        freezeStair(plan);
+        rf.forEach(function(r){ r.dimension = null; delete r.slot; });
+        var ns = stampRoomDims(plan, true, rf.map(function(r){ return r.id; }));
+        commitChanges(); render();
+        toast('✨ Đã xếp lại tầng theo diện tích các phòng' + (ns ? ' và ghi kích thước ' + ns + ' phòng' : ''), {action:{label:'Hoàn tác', fn: undo}});
+        return true;
+      }
       case 'viz-fix-shapes': {
         if(!plan) return true;
         var fx = fixBadShapes(plan, d.floor || null);
@@ -10447,8 +11206,18 @@
       case 'viz-reset-cam': if(V3.camera) resetCam3D(); return true;
       case 'viz-retry3d': V3.loading = null; render(); return true;
       case 'viz-room':
-        if(d.id) openRoomSheet(d.id);
-        else toast('Khu vực tự vẽ (' + (d.name || 'tự động') + ') — chưa phải phòng thật. Bấm "+ Phòng" để thêm phòng.');
+        vs = vizState();
+        if(Date.now() - vizDragEndAt < 450) return true;
+        if(d.id){
+          // chạm lần 2 vào phòng đang chọn → mở rộng bảng phòng
+          if(vs.selected === d.id && state.currentPage === 'visual'){ vs.panel = 'high'; render(); }
+          else selectVizRoom(d.id);
+        } else if(d.vt && vs.view !== 'lot'){
+          vs.selected = null; vs.ripple = null; vs.zoom = false;
+          vs.virt = {name:d.name, type:d.vt, x:Number(d.vx), y:Number(d.vy), w:Number(d.vw), h:Number(d.vh), floor:vs.view};
+          vs.panel = vs.panel || 'low';
+          render(); vizRevealStage();
+        } else toast('Khu vực tự vẽ (' + (d.name || 'tự động') + ') — chưa phải phòng thật. Bấm "+ Phòng" để thêm phòng.');
         return true;
       case 'viz-add-room': {
         if(!plan) return true;
@@ -10617,6 +11386,8 @@
         selectedIds().forEach(function(id){ var it = findItem(plan, id); if(it){ it.scopeLevel = sc.level; it.scopeId = sc.id; } });
         commitChanges(); requestRender();
         toast('Đã gán vị trí cho ' + selectedIds().length + ' dòng', {action:{label:'Hoàn tác', fn: undo}});
+      } else if((ui === 'rp-dim' || ui === 'rp-area') && plan){
+        vizPanelInput(t, plan);
       } else if(ui === 'lib-cat'){
         state.libCat = t.value; requestRender();
       } else if(ui === 'tpl-dim'){
@@ -11151,6 +11922,7 @@
       return;
     }
     if(mod || e.altKey) return;
+    if(vizKeydown(e)) return;
     if(e.key === '?'){ e.preventDefault(); openHelp(); return; }
     if(e.key === '/'){
       var s = document.querySelector('#app [data-filter="q"], #app [data-ui="lib-search"]');
@@ -11240,6 +12012,9 @@
     app.addEventListener('change', handleChange);
     app.addEventListener('click', handleClick);
     app.addEventListener('input', handleInput);
+    app.addEventListener('pointerdown', startRepeat);
+    ['pointerup', 'pointercancel', 'blur'].forEach(function(ev){ window.addEventListener(ev, stopRepeat); });
+    window.addEventListener('resize', function(){ var st = document.querySelector('#app .viz-stage.v2d'); if(st) placeHandles(st); });
     document.addEventListener('keydown', handleGlobalKeydown);
     // Giữ lại lần vẽ lại khi đang nhấn chuột, để cú click không bị "mất"
     // vì nút bị vẽ lại ngay giữa lúc nhấn (change của ô trước đó kích hoạt).

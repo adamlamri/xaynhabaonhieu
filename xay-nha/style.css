@@ -39,6 +39,13 @@
 .viz-svg .viz-dim-t { fill: var(--color-text-muted); }
 .viz-svg .vz-north-c { fill: var(--color-surface); stroke: var(--color-border-strong); stroke-width: 1px; vector-effect: non-scaling-stroke; }
 .viz-svg .vz-north-a { fill: var(--color-danger); }
+.viz-stage.has-sel .viz-svg { touch-action: none; }
+.viz-svg .viz-room.sel { cursor: grab; }
+.viz-svg .viz-room.drop-on .viz-cell { stroke: var(--color-primary); stroke-width: 5px; stroke-dasharray: 7, 4; }
+.viz-svg .viz-room.off .viz-cell { stroke: var(--color-warning,#d97706); stroke-width: 3px; stroke-dasharray: 6, 3; }
+.viz-svg .viz-room.sel.off .viz-cell { stroke: var(--color-primary); stroke-width: 4px; }
+.viz-svg .viz-room.flash .viz-cell { animation: 0.7s ease-in-out 0s 3 normal none running vzflash; }
+.room-tile.off .rt-sub { color: var(--color-warning,#d97706); }
 .el-svg .el-ground { fill: var(--el-ground); }
 .el-svg .el-wall { fill: var(--el-wall); stroke: var(--el-line); stroke-width: 1px; vector-effect: non-scaling-stroke; }
 .el-svg .el-wall.soft { fill: var(--el-wall-soft); }
@@ -52,6 +59,7 @@
 .el-svg .el-trunk { fill: rgb(146, 64, 14); }
 :root[data-theme="dark"] .plan-card .pc-thumb { background: linear-gradient(rgb(30, 58, 138), rgb(30, 41, 59) 80%, rgb(20, 83, 45)); }
 .plan-card .pc-thumb .el-svg { height: 100%; width: 100%; }
+@media (max-width: 760px){body.room-panel-open .viz-svg { max-height: calc(-84px + 60vh); }}
 
 *{box-sizing:border-box}
 body{margin:0;background:var(--color-bg);color:var(--color-text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}

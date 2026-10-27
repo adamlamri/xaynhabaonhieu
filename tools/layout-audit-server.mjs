@@ -16,7 +16,8 @@ const PORT = Number(process.env.PORT) || 8767;
 const OUT_DIR = process.env.OUT_DIR || path.join(os.tmpdir(), 'xaynhabaonhieu-seo');
 const HOOK = "if(document.readyState === 'loading'){";
 const EXPOSE = 'window.__X = {HOUSE_TEMPLATES:HOUSE_TEMPLATES, LOT_PRESETS:LOT_PRESETS, buildPlanFromTemplate:buildPlanFromTemplate, planGeometry:planGeometry, geoRoomType:geoRoomType, scoreTemplate:scoreTemplate, planLivability:planLivability,'
-  + ' FINISH_LEVELS:FINISH_LEVELS, CATEGORIES:CATEGORIES, categoryShort:categoryShort, computePlanStats:computePlanStats, houseElevationSvg:houseElevationSvg, renderVizSvg:renderVizSvg, maxDensity:maxDensity};\n';
+  + ' FINISH_LEVELS:FINISH_LEVELS, CATEGORIES:CATEGORIES, categoryShort:categoryShort, computePlanStats:computePlanStats, houseElevationSvg:houseElevationSvg, renderVizSvg:renderVizSvg, maxDensity:maxDensity,'
+  + ' stampRoomDims:stampRoomDims, drawnRoom:drawnRoom, roomSizeInfo:roomSizeInfo, edgeFit:edgeFit, dimsFit:dimsFit};\n';
 const TYPES = {'.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.json':'application/json', '.svg':'image/svg+xml', '.png':'image/png', '.webmanifest':'application/manifest+json'};
 
 function app(){
