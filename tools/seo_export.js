@@ -1,6 +1,8 @@
 // Chạy trong DevTools của bản app đã gắn móc window.__X (xem tools/README.md).
-// Xuất số liệu mọi cặp lô × mẫu nhà (dùng đúng logic app) + CSS cho SVG, POST về server thu file ở cổng 8766.
+// Xuất số liệu mọi cặp lô × mẫu nhà (dùng đúng logic app) + CSS cho SVG, POST về server thu file:
+// mặc định cổng 8766; mở app qua tools/layout-audit-server.mjs thì đặt window.__SEO_OUT = '/__out/' trước khi chạy.
 (async function(){
+  var OUT = window.__SEO_OUT || 'http://127.0.0.1:8766/';
   var X = window.__X, out = {lots: [], levels: X.FINISH_LEVELS.map(function(l){ return {key:l.key, label:l.label, rough:l.rough, full:l.full}; }), cats: X.CATEGORIES.map(function(c){ return {key:c.key, label:X.categoryShort(c.key)}; })};
   function ctxOf(w, l, level, method){ return {w:w, l:l, needs:{}, beds:0, level:level, method:method, budget:null, budgetMax:null}; }
   X.LOT_PRESETS.forEach(function(p){
@@ -26,7 +28,7 @@
     lot.items.sort(function(a, b){ return b.score - a.score; });
     out.lots.push(lot);
   });
-  await fetch('http://127.0.0.1:8766/seo-data.json', {method:'POST', body: JSON.stringify(out)});
+  await fetch(OUT + 'seo-data.json', {method:'POST', body: JSON.stringify(out)});
   // CSS: mọi quy tắc có class xuất hiện trong SVG + biến màu :root
   var cls = {};
   out.lots.forEach(function(l){ l.items.forEach(function(it){ [it.elevation, it.lotSvg].concat(it.floorSvgs.map(function(f){ return f.svg; })).forEach(function(s){ (s.match(/class="[^"]+"/g) || []).forEach(function(m){ m.slice(7, -1).split(/\s+/).forEach(function(c){ cls[c] = 1; }); }); }); }); });
@@ -36,6 +38,6 @@
     if(!r.selectorText) continue;
     if(/^:root/.test(r.selectorText) || names.some(function(c){ return new RegExp('\\.' + c.replace(/-/g, '\\-') + '(?![\\w-])').test(r.selectorText); })) acc.push(r.cssText); } }
   walk(document.styleSheets[0].cssRules, plain);
-  await fetch('http://127.0.0.1:8766/seo-css.css', {method:'POST', body: plain.concat(media).join('\n')});
+  await fetch(OUT + 'seo-css.css', {method:'POST', body: plain.concat(media).join('\n')});
   console.log('xong', out.lots.length, 'lô');
 })();

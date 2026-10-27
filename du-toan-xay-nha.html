@@ -4633,6 +4633,10 @@
   // Các cạnh ngoài của tầng đang xếp (bỏ cạnh sát ranh đất 2 bên) — phòng ngủ phải chạm ít nhất
   // 1 cạnh ngoài (hoặc giếng trời / ban công) để có cửa sổ. null = không xét.
   var LAYOUT_EXT = null;
+  // Đang xếp phòng cạnh dải hành lang: {side:'left'|'right'} = phía có hành lang. Mọi phòng
+  // (trừ giếng trời, ban công) phải chạm cạnh đó để có cửa ra hành lang.
+  var LAYOUT_SPINE = null;
+  var LAYOUT_NOPAD = false;     // phòng cuối hành lang: không chèn ô đệm (sẽ chắn chỗ nối với hành lang)
   var NEEDS_WINDOW = {bedroom:1, rental:1, office:1};
   function touchesExt(x, y, w, h){
     if(!LAYOUT_EXT) return true;
@@ -4673,6 +4677,8 @@
           var ih = it.v / cw;
           var car = it.type === 'garage' && /ô tô|oto|gara/i.test(it.name || '');
           cost += across ? roomShapeCost(it.type, cw, ih, it.v, car, it.want) : roomShapeCost(it.type, ih, cw, it.v, car, it.want);
+          if(LAYOUT_SPINE && it.type !== 'lightwell' && it.type !== 'balcony' && !(it.virtual && it.type === 'other') && !attachedRoom(it) && !(LAYOUT_SPINE.side === 'right' ? cx + cw >= W - 0.05 : cx <= 0.05))
+            cost += 30 * Math.pow(Math.max(it.v, 3), 0.75);
           if(NEEDS_WINDOW[it.type] && LAYOUT_EXT && rect){
             var lit = lwNear || (across ? touchesExt(rect.x + cx, rect.y + off + cy, cw, ih) : touchesExt(rect.x + off + cy, rect.y + cx, ih, cw));
             [cols[ci - 1], cols[ci + 1]].forEach(function(nc){ if(nc && nc.some(function(o){ return o.type === 'lightwell' || o.type === 'balcony'; })) lit = true; });
@@ -4708,8 +4714,9 @@
   }
   function layoutBands(items, rect){
     // khối gần vuông: thử cả 2 hướng, ưu tiên hướng tự nhiên (cạnh ngắn) nếu không kém hơn rõ rệt
-    var nat = rect.w <= rect.h, sol = solveBands(items, rect, nat);
-    if(items.length > 1 && Math.max(rect.w, rect.h) < Math.min(rect.w, rect.h) * 1.6){
+    // cạnh dải hành lang: dải phòng luôn chạy ngang để dải nào cũng chạm hành lang
+    var nat = LAYOUT_SPINE ? true : rect.w <= rect.h, sol = solveBands(items, rect, nat);
+    if(!LAYOUT_SPINE && items.length > 1 && Math.max(rect.w, rect.h) < Math.min(rect.w, rect.h) * 1.6){
       var alt = solveBands(items, rect, !nat);
       if(alt.cost < sol.cost * 0.85 - 0.5) sol = alt;
     }
@@ -4741,7 +4748,7 @@
     var spare = cap - list.reduce(function(a, r){ return a + r.area; }, 0);   // chỗ thừa trên dải → mới chừa được hành lang
     list.forEach(function(r, k){
       items.push(r);
-      if(r.type !== 'wc' && r.type !== 'laundry') return;
+      if(LAYOUT_SPINE || (r.type !== 'wc' && r.type !== 'laundry')) return;     // cạnh hành lang chính: không cần lối phụ
       var prev = list[k - 1], next = list[k + 1];
       function small(o){ return o && !o.virtual && SMALL_ROOM[o.type] && o.type !== 'balcony'; }
       if(small(prev) || small(next) || list.length < 2) return;
@@ -4780,8 +4787,21 @@
     items.forEach(function(r){ r.v = r.v / vs * cap; });
     layoutBands(items, rect);
     items = improveShapes(items, rect, isFixed);
-    // ô chèn thêm mà hẹp → thực chất là hành lang dẫn vào phòng
-    items.forEach(function(r){ if(r.pad && Math.min(r.w, r.h) < 1.6) r.name = 'Hành lang'; });
+    // WC / giặt đứng 1 mình trong dải sâu bị kéo thành ống < 1,2 m (không đặt nổi bồn cầu + cửa) →
+    // nới rộng ≥ 1,3 m (WC rộng hơn, thêm chỗ để đồ), phòng khác co lại cho vừa, xếp lại
+    var thin = items.filter(function(r){ return (r.type === 'wc' || r.type === 'laundry') && Math.min(r.w, r.h) < 1.2 && Math.max(r.w, r.h) >= 1.8; });
+    if(thin.length){
+      var v1 = items.map(function(r){ return r.v; });
+      thin.forEach(function(r){ r.v = Math.max(r.v, 1.3 * Math.max(r.w, r.h)); });
+      var tv = thin.reduce(function(a, r){ return a + r.v; }, 0), rest = items.filter(function(r){ return thin.indexOf(r) < 0; });
+      var rv = rest.reduce(function(a, r){ return a + r.v; }, 0), kk = rv > 0 ? (cap - tv) / rv : 0;
+      if(kk >= 0.6){ rest.forEach(function(r){ r.v *= kk; }); layoutBands(items, rect); }
+      else items.forEach(function(r, k){ r.v = v1[k]; });
+    }
+    // ô chèn thêm mà hẹp → thực chất là tủ âm / kho cạnh phòng (không phải lối đi)
+    items.forEach(function(r){ if(r.pad && Math.min(r.w, r.h) < 1.6){ r.name = 'Tủ âm / kho'; r.type = 'other'; } });
+    // hành lang kèm WC mà hẹp hơn 0,9 m thì không đi được → tủ âm
+    items.forEach(function(r){ if(r.companion && !r.pad && r.type === 'corridor' && !r.slack && Math.min(r.w, r.h) < 0.9){ r.name = 'Tủ âm / kho'; r.type = 'other'; } });
     items.forEach(function(r){ if(r.companion && list.indexOf(r) < 0) list.push(r); });
     return list;
   }
@@ -4816,6 +4836,7 @@
   // Phòng ngủ/làm việc… bị kéo hết bề ngang hoặc dài ngoằng → chèn 1 ô "Không gian chung"
   // (sảnh, hành lang, chỗ để đồ) cạnh phòng đó rồi xếp lại, giữ phương án ít méo nhất
   function improveShapes(items, rect, isFixed){
+    if(LAYOUT_SPINE || LAYOUT_NOPAD) return items;          // cạnh / cuối hành lang: ô đệm chen vào sẽ chắn cửa phòng
     var cap = rect.w * rect.h;
     for(var iter = 0; iter < 2; iter++){
       var base = layoutBadness(items);
@@ -4961,33 +4982,270 @@
     return segs;
   }
 
+  // Xếp list vào rect; hiên / ban công / lô gia ở đầu hoặc cuối list thành dải hết bề ngang sát mặt nhà
+  // (đầu list = cạnh y nhỏ, cuối list = cạnh y lớn) thay vì 1 ô đứng cạnh phòng
+  function layoutFacadeFirst(list, rect){
+    var r = {x:rect.x, y:rect.y, w:rect.w, h:rect.h}, body = list.slice();
+    [0, 1].forEach(function(end){
+      if(body.length < 2) return;
+      var it = end ? body[body.length - 1] : body[0];
+      if(!facadeOpen(it) || it.type === 'rooftop') return;
+      var d = clampNum(it.area / r.w, 1.1, 2.4);
+      if(r.h - d < 2.4) return;
+      it.x = r.x; it.w = r.w; it.h = d; it.v = r.w * d; it.y = end ? r.y + r.h - d : r.y;
+      if(!end) r.y += d;
+      r.h -= d;
+      if(end) body.pop(); else body.shift();
+    });
+    layoutRooms(body, r);
+    body.forEach(function(x){ if(list.indexOf(x) < 0) list.push(x); });
+  }
+
+  // ----- "Xương sống" giao thông (skill thiet-ke-nha, luật L2): mọi phòng có cửa ra lối đi -----
+  var THRU_T = {stairs:1, corridor:1, living:1, kitchen:1, garage:1, shop:1, elevator:1};   // đi xuyên qua được
+  var SVC_T = {wc:1, laundry:1, lightwell:1, other:1, elevator:1};
+  // ban công / lô gia phơi / sân thượng ở mặt nhà: đi qua phòng ngay trong nó
+  function facadeOpen(r){ return r.type === 'balcony' || r.type === 'rooftop' || (r.type === 'laundry' && /lô gia|ban công|sân phơi/i.test(r.name || '')); }
+  // phòng phụ mở cửa từ phòng chủ (WC master, phòng thay đồ…): không cần cửa ra hành lang
+  function attachedRoom(r){ return (r.type === 'wc' && /master|ông bà|bố mẹ|riêng/i.test(r.name || '')) || ((r.type === 'other' || r.type === 'corridor') && /thay đồ|tủ đồ/i.test(r.name || '')); }
+  // Chia tổng chiều sâu cho các đoạn theo nhu cầu (v), không đoạn nào dưới mức tối thiểu (min)
+  function fitDepths(segs, total){
+    var d = segs.map(function(){ return 0; }), fixed = segs.map(function(){ return false; });
+    for(var it = 0; it < segs.length + 1; it++){
+      var left = total, vs = 0;
+      segs.forEach(function(g, i){ if(fixed[i]) left -= d[i]; else vs += g.v; });
+      if(left < -0.01) return null;
+      var again = false;
+      segs.forEach(function(g, i){
+        if(fixed[i]) return;
+        d[i] = vs > 0 ? g.v / vs * left : 0;
+        if(d[i] < g.min - 0.01){ d[i] = g.min; fixed[i] = true; again = true; }
+      });
+      if(!again) return d;
+    }
+    return d.reduce(function(s, v){ return s + v; }, 0) <= total + 0.01 ? d : null;
+  }
+  // list: các phòng theo thứ tự từ chỗ vào (cầu thang / cửa chính) đi ra ngoài; dir = +1 đi theo
+  // chiều y tăng, −1 ngược lại. Phòng đi xuyên được ở đầu (khách, bếp…) đứng hết bề ngang; các phòng
+  // không đi xuyên được trước phòng cuối xếp cạnh dải hành lang spine {x, w}; phòng cuối hết bề ngang.
+  // plain(l, rect): xếp 1 đoạn không cần hành lang. Trả về false nếu không cần / không xếp được.
+  // Nhà chữ L / U: vùng gồm nhiều khối nối tiếp từ chỗ vào ra ngoài. Hành lang chạy xuyên các khối
+  // (spine phải nằm trong mọi khối); khối giữa: hành lang suốt chiều sâu khối, khối cuối: như spineLayout.
+  function spineChain(list, rects, spine, dir, out, plain){
+    if(rects.length < 2) return spineLayout(list, rects[0], spine, dir, out, plain);
+    if(rects.some(function(r){ return spine.x < r.x - 0.05 || spine.x + spine.w > r.x + r.w + 0.05; })) return false;
+    var rs = rects.slice().sort(function(a, b){ return dir > 0 ? a.y - b.y : b.y - a.y; });
+    var caps = rs.map(function(r){ return r.w * r.h - spine.w * r.h; }), C = caps.reduce(function(s, v){ return s + v; }, 0);
+    var S = list.reduce(function(s, r){ return s + r.area; }, 0) || 1, acc = 0, groups = rs.map(function(){ return []; });
+    list.forEach(function(r){
+      var mid = (acc + r.area / 2) / S * C, k = 0, edge = caps[0];
+      while(k < rs.length - 1 && mid > edge){ k++; edge += caps[k]; }
+      groups[k].push(r); acc += r.area;
+    });
+    // ban công / lô gia mặt nhà luôn ở khối ngoài cùng
+    for(var g = 0; g < rs.length - 1; g++){
+      var tail = groups[g].filter(facadeOpen);
+      if(tail.length){ groups[g] = groups[g].filter(function(r){ return !facadeOpen(r); }); groups[rs.length - 1] = groups[rs.length - 1].concat(tail); }
+    }
+    rs.forEach(function(r, i){
+      if(i < rs.length - 1) spineLayout(groups[i], r, spine, dir, out, plain, true);
+      else if(!spineLayout(groups[i], r, spine, dir, out, plain)) plain(dir > 0 ? groups[i] : groups[i].slice().reverse(), r);
+    });
+    return true;
+  }
+  // through: khối giữa của nhà chữ L / U — mọi phòng xếp cạnh hành lang chạy suốt chiều sâu khối
+  function spineLayout(list, rect, spine, dir, out, plain, through){
+    if(spine.x < rect.x - 0.05 || spine.x + spine.w > rect.x + rect.w + 0.05 || rect.h < (through ? 0.5 : 2)) return false;
+    if(through) return spineTry(list.length - 1, false, true);
+    var k = list.length;
+    while(k > 0 && facadeOpen(list[k - 1])) k--;
+    var f0 = 0;
+    while(f0 < k && (THRU_T[list[f0].type] || facadeOpen(list[f0]))) f0++;    // hiên / khách / bếp ngay lối vào
+    var m = -1;
+    for(var q = f0; q < k - 1; q++) if(!THRU_T[list[q].type]) m = q;
+    if(m < 0) return false;
+    // phòng cuối hết bề ngang; không đủ sâu thì kéo hành lang tới tận mặt nhà. Hành lang giữa (2 bên đều
+    // ≥ 2,4 m): phòng cuối hết bề ngang sẽ dài ngoằng → ưu tiên hành lang tới tận mặt nhà, phòng 2 bên
+    var twoSided = spine.x - rect.x >= 2.4 && rect.x + rect.w - spine.x - spine.w >= 2.4;
+    // thứ tự thử: phòng cuối hết bề ngang + dải ban công → (chật) ban công đứng cạnh phòng → hành lang tới mặt nhà
+    return twoSided ? (spineTry(k - 1, true) || spineTry(m)) : (spineTry(m) || spineTry(m, false, false, true) || spineTry(k - 1));
+    function spineTry(m, toEnd, all, relaxed){
+    var lead = all ? [] : list.slice(0, f0), covered = all ? list.slice() : list.slice(f0, m + 1), rest = all ? [] : list.slice(m + 1);
+    // phòng phụ (WC master, thay đồ…) xếp ngay phía trong phòng chủ, cùng cột (phòng chủ ra mặt nhà lấy
+    // sáng); phòng chủ ở phần ngoài cùng (không trong dải) → phòng phụ đứng cuối dải, sát phòng chủ
+    var hostOf = function(a){
+      var nm = a.name || '', key = /master/i.test(nm) ? /master/i : (/ông bà/i.test(nm) ? /ông bà/i : (/bố mẹ/i.test(nm) ? /bố mẹ/i : null));
+      var pool = list.filter(function(r){ return r.type === 'bedroom' && !attachedRoom(r); });
+      if(key) return pool.filter(function(r){ return key.test(r.name || ''); })[0] || null;
+      var before = list.slice(0, list.indexOf(a)).filter(function(r){ return pool.indexOf(r) >= 0; });
+      return before[before.length - 1] || pool[0] || null;
+    };
+    var att = covered.filter(attachedRoom);
+    covered = covered.filter(function(r){ return !attachedRoom(r); });
+    att.forEach(function(a){ var h = hostOf(a), at = covered.indexOf(h); if(at >= 0) covered.splice(at, 0, a); else covered.push(a); });
+    function sumA(l){ return l.reduce(function(s, r){ return s + r.area; }, 0); }
+    function minD(l){ return l.reduce(function(s, r){ return Math.max(s, r.type === 'bedroom' || r.type === 'rental' ? 2.7 : (ROOM_MIN_SIDE[r.type] || 1.2)); }, 0); }
+    // chiều sâu tối thiểu khi các phòng xếp chồng trong 1 cột cạnh hành lang
+    var STACK = {bedroom:2.4, rental:2.4, office:2.2, living:2.4, kitchen:2.1, wc:1.5, laundry:1.2, lightwell:1, altar:1.8};
+    function stackD(l){ return l.reduce(function(s, r){ return s + (STACK[r.type] || 0); }, 0); }
+    // các cột 2 bên hành lang; cột hẹp hơn 1,2 m không đặt nổi phòng → tủ âm (≥ 0,6 m) hoặc nhập vào lối đi
+    var cols = [{x:rect.x, w:spine.x - rect.x}, {x:spine.x + spine.w, w:rect.x + rect.w - spine.x - spine.w}];
+    var narrow = cols.filter(function(c){ return c.w > 0.05 && c.w < 1.2; });
+    cols = cols.filter(function(c){ return c.w >= 1.2; });
+    if(!cols.length || cols.reduce(function(s, c){ return s + c.w; }, 0) < 1.5) return false;
+    var groups = cols.map(function(){ return []; });
+    if(cols.length === 1) groups[0] = covered.slice();
+    else if(Math.min(cols[0].w, cols[1].w) < 2.4){
+      // 1 cột hẹp (vd cột dưới cầu thang): WC, giặt, giếng trời vào cột hẹp, phòng lớn vào cột rộng
+      var big = cols[0].w >= cols[1].w ? 0 : 1;
+      // phòng phụ (WC master, thay đồ) đi cùng cột với phòng chủ ngay sau nó
+      covered.forEach(function(r, j){ var nx = covered[j + 1], i = attachedRoom(r) && nx && nx.type === 'bedroom' && !SVC_T[nx.type] ? big : (SVC_T[r.type] ? 1 - big : big); groups[i].push(r); });
+      if(!groups[big].length && groups[1 - big].length > 1) groups[big].push(groups[1 - big].pop());
+    } else {
+      // hành lang giữa nhà rộng: phòng 2 bên, chia đều theo diện tích (giữ thứ tự)
+      var caps = cols.map(function(c){ return c.w; }), got = [0, 0];
+      // WC / giặt về phía trục WC (chồng thẳng các tầng), bếp phía bên kia (WC không nằm trên bếp);
+      // phòng phụ đi cùng cột với phòng chủ ngay sau nó; còn lại chia đều theo diện tích
+      var wetI = spine.wet === 'left' ? 0 : (spine.wet === 'right' ? 1 : -1), pend = [];
+      covered.forEach(function(r){
+        var i;
+        if(attachedRoom(r)){ pend.push(r); return; }
+        if(wetI >= 0 && (r.type === 'wc' || r.type === 'laundry')) i = wetI;
+        else if(wetI >= 0 && r.type === 'kitchen') i = 1 - wetI;
+        else i = got[0] / caps[0] <= got[1] / caps[1] ? 0 : 1;
+        pend.forEach(function(a){ groups[i].push(a); got[i] += a.area; }); pend = [];
+        groups[i].push(r); got[i] += r.area;
+      });
+      pend.forEach(function(a){ var i = got[0] / caps[0] <= got[1] / caps[1] ? 0 : 1; groups[i].push(a); got[i] += a.area; });
+    }
+    // hành lang tới mặt nhà mà 1 bên trống → phí cả dải; để phòng cuối hết bề ngang thì hơn
+    if(toEnd && groups.some(function(g){ return !g.length; })) return false;
+    // chiều sâu dải = cột nào cần sâu nhất
+    var bandV = 0, bandMin = 1.2;
+    groups.forEach(function(g, i){
+      bandV = Math.max(bandV, sumA(g) / cols[i].w);
+      bandMin = Math.max(bandMin, stackD(g));
+    });
+    // phần ngoài cùng: phòng chính + dải ban công / lô gia mặt nhà
+    var restMin = !rest.length ? 0 : (relaxed ? minD(rest) : minD(rest.filter(function(r){ return !facadeOpen(r); })) + rest.filter(facadeOpen).reduce(function(s, r){ return s + clampNum(r.area / rect.w, 1.1, 2.4); }, 0));
+    var ds = all ? [0, rect.h, 0] : fitDepths([{v:sumA(lead) / rect.w, min: lead.length ? Math.min(minD(lead), 3) : 0}, {v:bandV, min:bandMin}, {v:sumA(rest) / rect.w, min:restMin}], rect.h);
+    if(!ds) return false;
+    var y = dir > 0 ? rect.y : rect.y + rect.h;
+    function seg(d){ var r = dir > 0 ? {x:rect.x, y:y, w:rect.w, h:d} : {x:rect.x, y:y - d, w:rect.w, h:d}; y += dir * d; return r; }
+    function asc(l){ return dir > 0 ? l.slice() : l.slice().reverse(); }
+    var leadR = ds[0] > 0.01 ? seg(ds[0]) : null, band = seg(ds[1]), restR = seg(ds[2]);
+    var spR = {x:spine.x, y:band.y, w:spine.w, h:band.h};
+    var hall = [spR];
+    narrow.forEach(function(c){
+      var nr = {x:c.x, y:band.y, w:c.w, h:band.h};
+      if(c.w >= 0.6) out.push({id:null, name:'Tủ âm / kho', type:'other', area:rectArea(nr), virtual:true, x:nr.x, y:nr.y, w:nr.w, h:nr.h, v:rectArea(nr)});
+      else hall.push(nr);
+    });
+    var parts = cols.map(function(c){ return {x:c.x, y:band.y, w:c.w, h:band.h}; });
+    if(leadR) plain(asc(lead), leadR);
+    parts.forEach(function(p, i){
+      var L = asc(groups[i]);
+      var cap = rectArea(p), sum = sumA(L), side = p.x < spR.x ? 'right' : 'left';
+      // chỗ thừa thành tủ âm / kho ở phía xa hành lang, phòng thật đứng sát hành lang
+      if(sum < cap * 0.75){
+        var kho = {id:null, name:'Kho / tủ âm', type:'other', area:Math.max(cap - sum, cap * 0.25), virtual:true};
+        if(side === 'right') L.unshift(kho); else L.push(kho);
+      }
+      LAYOUT_SPINE = {side:side};
+      layoutRooms(L, p);
+      LAYOUT_SPINE = null;
+      L.forEach(function(r){ if(out.indexOf(r) < 0) out.push(r); });
+    });
+    hall.forEach(function(h){ out.push({id:null, name:'Hành lang', type:'corridor', area:rectArea(h), virtual:true, x:h.x, y:h.y, w:h.w, h:h.h, v:rectArea(h)}); });
+    // phần ngoài cùng chỉ 1 phòng chính: ban công / lô gia thành dải mặt nhà, phòng hết bề ngang (chạm đầu hành lang)
+    if(rest.length){
+      LAYOUT_NOPAD = true;
+      if(rest.filter(function(r){ return !facadeOpen(r); }).length <= 1){ var rl = asc(rest); layoutFacadeFirst(rl, restR); rl.forEach(function(r){ if(out.indexOf(r) < 0) out.push(r); }); }
+      else plain(asc(rest), restR);
+      LAYOUT_NOPAD = false;
+    }
+    return true;
+    }
+  }
+
   // Kích thước lõi cầu thang theo bề ngang nhà: lô hẹp dùng thang thẳng 1 vế dọc tường,
-  // 4,2–4,9 m thang chữ U dọc tường, ≥ 4,9 m thang chữ U đặt ngang (chừa lối đi bên cạnh)
+  // 4,2–8 m thang chữ U đặt ngang (2 vế ~1,1 m, chừa lối đi 1 m bên cạnh = chiếu tới),
+  // ≥ 8 m thang U dọc tường
   function stairCoreSize(bw){
-    if(bw < 4.2) return {w:clampNum(round1(bw * 0.3), 0.9, 1.1), h:5.4};
-    if(bw < 4.9) return {w:2.2, h:4};
-    if(bw >= 8) return {w:2.6, h:4.4};          // nhà rộng: thang U dọc tường, bên cạnh đặt được 1 phòng
-    return {w:4, h:2.4};
+    if(bw < 3.9) return {w:clampNum(round1(bw * 0.3), 0.9, 1.1), h:5.4};
+    // 3,9–4,9 m: thang U ngang 2 vế ~1,1 m (mỗi vế 8–9 bậc × 0,25 m + chiếu nghỉ 0,9 m) — chỉ sâu 2,3 m
+    if(bw < 4.9) return {w:round1(bw - 1), h:2.3};
+    // nhà rộng: thang U ngang ~ nửa nhà; lối đi 1 m cạnh thang chạy dọc nhà, phòng 2 bên đều rộng ≥ 3 m
+    if(bw >= 8) return {w:round1(clampNum(bw / 2 - 0.6, 3.8, 4.6)), h:2.6};
+    // vế thang 3–3,5 m; phần còn lại là lối đi 1 m (+ ô WC khi còn ≥ 1,2 m)
+    return {w:round1(clampNum(bw - 1.1, 3.8, 4.6)), h:2.4};
   }
   // Tầng có cầu thang: cầu thang đặt đúng vị trí lõi; phòng trước cầu thang xếp vào phần
   // phía trước, phòng sau xếp phía sau; khoảng bên cạnh cầu thang là lối đi (+ WC, giếng
   // trời, thang máy… nếu đứng sát cầu thang trong danh sách).
-  function layoutAroundCore(inside, blocks, core, filler){
+  // svc (nhà ống 4,2–8 m, do planGeometry tính chung cho cả nhà): {lw: tầng này có giếng trời,
+  // lwA, wcA}. Giếng trời + ô WC đặt cố định ngay sau / cạnh cầu thang ở mọi tầng để thông
+  // thẳng lên mái và trục ống thoát chồng thẳng (skill thiet-ke-nha L5, L6).
+  function layoutAroundCore(inside, blocks, core, filler, svc){
     var si = -1;
     inside.forEach(function(r, k){ if(si < 0 && r.type === 'stairs') si = k; });
     var st = inside[si];
     st.x = core.x; st.y = core.y; st.w = core.w; st.h = core.h;
     var pieces = [];
-    blocks.forEach(function(b){ (rectOverlap(b, core) ? rectMinus(b, core) : [b]).forEach(function(p){ pieces.push(p); }); });
+    // (rectMinus trả lại nguyên khối khi mọi mảnh còn lại < 0,6 m → ở đây phải là "không còn mảnh nào")
+    blocks.forEach(function(b){ var o = rectOverlap(b, core); (o ? rectMinus(b, core).filter(function(p){ return !rectOverlap(p, core); }) : [b]).forEach(function(p){ pieces.push(p); }); });
     var E = 0.02;
     var fronts = pieces.filter(function(p){ return p.y + p.h <= core.y + E; });
     var backs = pieces.filter(function(p){ return p.y >= core.y + core.h - E; });
     var sides = pieces.filter(function(p){ return fronts.indexOf(p) < 0 && backs.indexOf(p) < 0; });
     var before = inside.slice(0, si), after = inside.slice(si + 1);
     var slotted = inside.some(function(r){ return r.slot === 'stair' || r.slot === 'main'; });
+    if(slotted) svc = null;                 // người dùng đã ghim vị trí phòng → theo đúng lựa chọn
     var frontCap0 = fronts.reduce(function(s, p){ return s + rectArea(p); }, 0), backCap0 = backs.reduce(function(s, p){ return s + rectArea(p); }, 0);
+    var corr = null;                        // lối đi cạnh cầu thang = đầu "xương sống" giao thông của tầng
+    function place(it, r){
+      it.x = r.x; it.y = r.y; it.w = r.w; it.h = r.h; it.v = r.w * r.h;
+      [before, after].forEach(function(l){ var q = l.indexOf(it); if(q >= 0) l.splice(q, 1); });
+      if(inside.indexOf(it) < 0) inside.push(it);
+    }
+    function pick(test){
+      var lists = [after, before];
+      for(var q = 0; q < lists.length; q++){ var hit = lists[q].filter(test)[0]; if(hit) return hit; }
+      return null;
+    }
+    function takeLw(){ return pick(function(r){ return r.type === 'lightwell'; }) || {id:null, name:'Giếng trời', type:'lightwell', area:3, virtual:true}; }
+    // WC / giặt dùng chung đứng vào trục ướt; WC riêng (master, ông bà) ở lại cạnh phòng của nó
+    function takeWet(){ return pick(function(r){ return (r.type === 'wc' || r.type === 'laundry') && !/master|ông bà|bố mẹ|riêng/i.test(r.name || ''); }) || {id:null, name:'Kho / tủ âm', type:'other', area:3, virtual:true}; }
     // Ô cạnh cầu thang: lối đi ≥ 0,9 m sát cầu thang + các phòng nhỏ đứng liền cầu thang
+    var hasLift = inside.some(function(r){ return r.type === 'elevator'; });
+    var wetSide = null;                     // trục WC nằm bên trái / phải dải lối đi
     sides.forEach(function(sc){
+      if(svc && !hasLift){
+        // nhà ống: lối đi 1 m sát cầu thang (chiếu tới); phần còn lại ≥ 1,2 m là trục WC chồng thẳng mọi tầng
+        var nearS = core.x < sc.x, cw0 = sc.w >= 2.2 ? 1 : sc.w;
+        var cr = {x: nearS ? sc.x : sc.x + sc.w - cw0, y:sc.y, w:cw0, h:sc.h};
+        inside.push({id:null, name:'Lối đi', type:'corridor', area:rectArea(cr), virtual:true, x:cr.x, y:cr.y, w:cr.w, h:cr.h, v:rectArea(cr)});
+        if(!corr) corr = cr;
+        if(cw0 < sc.w){
+          var rx = nearS ? sc.x + cw0 : sc.x, rw = sc.w - cw0;
+          wetSide = nearS ? 'right' : 'left';
+          if(sc.h >= 4){
+            // thang thẳng dọc tường (lô < 4,2 m): ô cạnh thang = WC (sát lối vào phía trước) + giếng trời phía sau
+            var wd = clampNum(svc.wcA / rw, 1.6, Math.min(2.6, sc.h - 1.2));
+            place(takeWet(), {x:rx, y:sc.y, w:rw, h:wd});
+            place(svc.lw ? takeLw() : {id:null, name:'Kho / tủ âm', type:'other', area:3, virtual:true}, {x:rx, y:sc.y + wd, w:rw, h:sc.h - wd});
+            svc.lwDone = true;
+          } else if(rw >= 3){
+            // nhà rộng: ô WC sát lối đi + giếng trời cạnh thang phía tường ngoài
+            var ww = clampNum(svc.wcA / sc.h, 1.5, 2), far = nearS ? rx + ww : rx;
+            place(takeWet(), {x: nearS ? rx : rx + rw - ww, y:sc.y, w:ww, h:sc.h});
+            place(svc.lw ? takeLw() : {id:null, name:'Kho', type:'other', area:3, virtual:true}, {x:far, y:sc.y, w:rw - ww, h:sc.h});
+            svc.lwDone = true;
+          } else place(takeWet(), {x:rx, y:sc.y, w:rw, h:sc.h});
+          svc.wetDone = true;
+        }
+        return;
+      }
       var span = sc.w;                                      // lối đi chạy dọc theo cầu thang (trước → sau)
       var room = Math.max(0, span - 1), cap = room * sc.h, got = [], acc = 0;
       var frontCap = fronts.reduce(function(s, p){ return s + rectArea(p); }, 0), backCap = backs.reduce(function(s, p){ return s + rectArea(p); }, 0);
@@ -4996,6 +5254,8 @@
         while(list.length && cap > 1.2){
           var it = fromEnd ? list[list.length - 1] : list[0];
           if(!only && (!SMALL_ROOM[it.type] || it.type === 'balcony' || acc + it.area > cap * 1.15)) break;
+          // WC riêng (master, ông bà) ở cạnh phòng của nó, không kéo sang cạnh cầu thang
+          if(!only && it.type === 'wc' && /master|ông bà|bố mẹ|riêng/i.test(it.name || '')) break;
           // ô cạnh thang hẹp hơn 1,2 m: WC sẽ thành ống dài ~1 × 4 m → để WC ở dải trước/sau
           if(!only && it.type === 'wc' && room < 1.15) break;
           // phòng cuối cùng của phần trước/sau mà phần đó còn chỗ rộng → để nó ở đó, khỏi sinh khoảng trống
@@ -5026,10 +5286,11 @@
         });
       }
       var pass = {id:null, name:'Lối đi', type:'corridor', area:1, virtual:true};
-      if(!got.length){ pass.area = rectArea(sc); layoutRooms([pass], sc); inside.push(pass); return; }
+      if(!got.length){ pass.area = rectArea(sc); layoutRooms([pass], sc); inside.push(pass); corr = corr || sc; return; }
       var pw = span - room, nearX = core.x < sc.x;
       var pr, ir;
       pr = {x: nearX ? sc.x : sc.x + sc.w - pw, y:sc.y, w:pw, h:sc.h};
+      corr = corr || pr;
       ir = {x: nearX ? sc.x + pw : sc.x, y:sc.y, w:sc.w - pw, h:sc.h};
       pass.area = rectArea(pr); layoutRooms([pass], pr); inside.push(pass);
       got.forEach(function(r){ r.inCell = true; });
@@ -5056,7 +5317,38 @@
       layoutRooms(got, ir);
       got.forEach(function(r){ if(inside.indexOf(r) < 0) inside.push(r); });
     });
+    // "Xương sống" giao thông: dải lối đi cạnh cầu thang kéo dài qua các phòng trước/sau để
+    // phòng nào cũng có cửa ra lối đi — không phải đi xuyên phòng ngủ, WC, giếng trời
+    var spine = null;
+    if(corr && !slotted){
+      var spw = corr.w > 2.2 ? 1 : corr.w;
+      spine = {x: core.x < corr.x ? corr.x : corr.x + corr.w - spw, w:spw, wet:wetSide};
+    }
+    // Lõi kỹ thuật ngay sau cầu thang, cùng toạ độ ở mọi tầng: giếng trời hết bề ngang khối thang
+    // (lấy sáng cho phòng giữa nhà) + ô WC sát lối đi. Tầng dưới tầng có giếng trời (vd trệt kinh
+    // doanh) vẫn giữ ô WC đúng trục, chỗ giếng trời làm kho.
+    if(svc && svc.lwFrom >= 0 && !svc.lwDone && spine && backs.length === 1 && backs[0].x <= Math.min(core.x, spine.x) + 0.05 && backs[0].x + backs[0].w >= Math.max(core.x + core.w, spine.x + spine.w) - 0.05){
+      var bk = backs[0], stairLeft = core.x < spine.x;
+      var ow = bk.w - core.w - spine.w;                     // phần bên kia lối đi (nhà có thang máy / ô cạnh thang rộng)
+      // WC: đã có cạnh thang → giếng trời hết khối thang; bên kia lối đi đủ rộng → WC ở đó; không thì chia đôi khối thang
+      var wetW = svc.wetDone || ow >= 1.2 ? 0 : 1.5, lwW = core.w - wetW;
+      if(lwW >= 1.2 && bk.h >= 1 && ow > -0.05){
+        // sâu ~2–2,4 m: đủ WC 1,5 × 2,4 m và giếng trời ≥ 2 × 2 m, không ăn chiều sâu của phòng ngủ
+        var ds = clampNum(Math.max(wetW ? svc.wcA / wetW : (ow >= 1.2 && !svc.wetDone ? svc.wcA / ow : 0), Math.min(svc.lwA / lwW, 2.4)), 2, 2.6);
+        if(bk.h - ds < 1.5) ds = bk.h;
+        place(svc.lw ? takeLw() : {id:null, name:'Kho', type:'other', area:3, virtual:true}, {x: stairLeft ? core.x : core.x + wetW, y:bk.y, w:lwW, h:ds});
+        if(wetW){ place(takeWet(), {x: stairLeft ? core.x + lwW : core.x, y:bk.y, w:wetW, h:ds}); spine.wet = stairLeft ? 'left' : 'right'; }
+        else if(ow >= 0.9 && !svc.wetDone) spine.wet = stairLeft ? 'right' : 'left';
+        if(ow > 0.05) place(ow >= 0.9 ? takeWet() : {id:null, name:'Tủ âm / kho', type:'other', area:1, virtual:true}, {x: stairLeft ? spine.x + spine.w : bk.x, y:bk.y, w:ow, h:ds});
+        inside.push({id:null, name:'Lối đi', type:'corridor', area:spine.w * ds, virtual:true, x:spine.x, y:bk.y, w:spine.w, h:ds, v:spine.w * ds});
+        backs = ds < bk.h - 0.05 ? [{x:bk.x, y:bk.y + ds, w:bk.w, h:bk.h - ds}] : [];
+      }
+    }
     function fill(list, rects, isFront){
+      if(spine && rects.length && spineChain(isFront ? list.slice().reverse() : list, rects, spine, isFront ? -1 : 1, inside, function(l, r){ fillPlain(l, [r], isFront); })) return;
+      fillPlain(list, rects, isFront);
+    }
+    function fillPlain(list, rects, isFront){
       if(!rects.length) return;
       var cap = rects.reduce(function(s, p){ return s + rectArea(p); }, 0);
       var sum = list.reduce(function(s, r){ return s + r.area; }, 0);
@@ -5068,7 +5360,7 @@
       // ban công ở mặt tiền / mặt sau: nên là 1 dải hết bề ngang sát mép nhà, không đứng cạnh phòng ngủ thành ô dọc.
       // Thử cả 2 cách (dải riêng / xếp chung), giữ cách ít méo phòng hơn
       var bi = isFront ? 0 : list.length - 1, bal = list[bi];
-      if(bal && bal.type === 'balcony' && list.length > 1){
+      if(bal && facadeOpen(bal) && bal.type !== 'rooftop' && list.length > 1){
         var edge = rects.reduce(function(a, p){ return !a || (isFront ? p.y < a.y : p.y + p.h > a.y + a.h) ? p : a; }, null);
         var bd = clampNum(bal.area / edge.w, 1.1, 2), rest = list.filter(function(r){ return r !== bal; });
         if(edge.h - bd >= 2.4){
@@ -5104,7 +5396,7 @@
       var fCap = fronts.reduce(function(s, p){ return s + rectArea(p); }, 0), bCap = backs.reduce(function(s, p){ return s + rectArea(p); }, 0);
       var dem = function(list){ return list.reduce(function(s, r){ return s + r.area; }, 0); };
       // phòng chuyển sang sẽ nằm kẹp sát cầu thang → chỉ chuyển phòng không cần cửa sổ (WC, giặt, kho, thờ, thang máy)
-      var stay = function(r, nb){ return !r || !(r.type === 'wc' || r.type === 'laundry' || r.type === 'other' || r.type === 'altar' || r.type === 'elevator') && !(nb && nb.type === 'lightwell' && r.type !== 'balcony' && r.type !== 'garage' && r.type !== 'shop'); };
+      var stay = function(r, nb){ return !r || (r.type === 'wc' && /master|ông bà|bố mẹ|riêng/i.test(r.name || '')) || !(r.type === 'wc' || r.type === 'laundry' || r.type === 'other' || r.type === 'altar' || r.type === 'elevator') && !(nb && nb.type === 'lightwell' && r.type !== 'balcony' && r.type !== 'garage' && r.type !== 'shop'); };
       for(var g = 0; g < 6; g++){
         var fd = dem(before), bd = dem(after), rf = fd / fCap, rb = bd / bCap, worst = Math.max(rf, rb), mv;
         if(rb > rf * 1.25 && after.length > 1 && !stay(mv = after[0], before[before.length - 1]) && Math.max((fd + mv.area) / fCap, (bd - mv.area) / bCap) < worst){ before.push(after.shift()); continue; }
@@ -5198,7 +5490,7 @@
     });
     // Lõi cầu thang chung cho mọi tầng (cầu thang phải chồng thẳng lên nhau): đặt ở độ sâu
     // trung vị của vị trí cầu thang trong danh sách phòng các tầng đầy đủ
-    var core = null;
+    var core = null, svcAll = null;
     if(multi && bl >= 6){
       var cs = stairCoreSize(bw), fr = [], needF = 0, needB = 0;
       fl.forEach(function(L){
@@ -5247,6 +5539,17 @@
       fl.some(function(L){ return L.inside.some(function(r){ if(r.type === 'stairs' && r.want){ cs = {w:clampNum(r.want.w, 0.8, bw), h:clampNum(r.want.h, 1.5, bl - 2)}; return true; } return false; }); });
       core = placeCore(cs);
       if(notch && rectOverlap(core, notch)) core = placeCore({w:2.2, h:4});
+      // nhà chữ L / U: thang nằm ngang cạnh khoảng sân mà lối đi còn < 0,9 m → dời thang ra khỏi đoạn có sân
+      if(notch && core.y < notch.y + notch.h - 0.05 && core.y + core.h > notch.y + 0.05 && bw - notch.w - core.w < 0.9){
+        if(notch.y + notch.h + core.h <= front + bl - 2) core.y = notch.y + notch.h;
+        else if(notch.y - core.h >= front + 2) core.y = notch.y - core.h;
+      }
+      // giếng trời + trục WC cố định theo lõi thang, từ tầng thấp nhất có giếng trời trở lên
+      if(bw >= 3.2 && !notch){
+        var lwFrom = -1;
+        fl.forEach(function(L, i){ if(lwFrom < 0 && L.inside.some(function(r){ return r.type === 'lightwell'; })) lwFrom = i; });
+        svcAll = {lwFrom:lwFrom, lwA:clampNum(round1(bw * 1.5), 4, 9), wcA: bw >= 6.5 ? 4.2 : 3.6};
+      }
     }
     // Lượt 2: xếp phòng từng tầng
     var geoFloors = fl.map(function(L, i){
@@ -5269,7 +5572,8 @@
           var sideW = bw - core.w - 1;
           if(tot > bef && fa < 3 && sideW >= 1.4 && tot - bef <= (sideW + 1) * core.h){ bef = tot; fa = 0; }
           // tum (TCVN: ≤ 30% sàn mái): phòng thờ / giặt vừa ô cạnh cầu thang → tum chỉ gồm khối thang
-          if(L.isTum && !L.isMezz && sideW >= 1.8 && tot > 0 && tot <= sideW * core.h * 1.1){ eh = core.h; fb = fa = 0; bef = tot; }
+          // (nhà có lõi kỹ thuật: ô cạnh thang là trục WC / giếng trời → thờ, giặt cần phần trước / sau thang)
+          if(L.isTum && !L.isMezz && !svcAll && sideW >= 1.8 && tot > 0 && tot <= sideW * core.h * 1.1){ eh = core.h; fb = fa = 0; bef = tot; }
           else if(eh - core.h < fb + fa) eh = Math.min(bl, core.h + fb + fa);
           var room = eh - core.h;
           ey = core.y - clampNum(tot ? bef / tot * room : 0, fb, Math.max(fb, room - fa));
@@ -5287,9 +5591,22 @@
       var useCore = core && inside.some(function(r){ return r.type === 'stairs'; }) && fBlocks.some(function(b){ return rectOverlap(b, core); });
       if(!inside.length) inside.push({id:null, name:'Chưa chia phòng', type:'other', area:cap, virtual:true});
       else if(!useCore && sum < cap * 0.6) inside.push({id:null, name:'Không gian chung', type:'corridor', area:cap * 0.85 - sum, virtual:true});
-      LAYOUT_EXT = blockOutline(fBlocks).filter(function(s){ return !(Math.abs(s[0] - s[2]) < 0.02 && (s[0] < 0.05 || s[0] > lotW - 0.05)); });
-      if(useCore) layoutAroundCore(inside, fBlocks, core, null);
-      else layoutInBlocks(inside, fBlocks);
+      // tường hông cách ranh < 1 m: tường giáp ranh, không mở cửa sổ (TCVN 9411 6.4.3.1)
+      LAYOUT_EXT = blockOutline(fBlocks).filter(function(s){ return !(Math.abs(s[0] - s[2]) < 0.02 && Math.min(s[0], lotW - s[0]) < 0.95); });
+      if(useCore) layoutAroundCore(inside, fBlocks, core, null, svcAll ? {lw: svcAll.lwFrom >= 0 && i >= svcAll.lwFrom, lwFrom:svcAll.lwFrom, lwA:svcAll.lwA, wcA:svcAll.wcA} : null);
+      else {
+        // tầng không có cầu thang: đi từ cửa chính (mặt tiền) vào; nhà rộng ≥ 8 m hành lang giữa
+        // ≥ 6,5 m: hành lang giữa, phòng 2 bên (không thành phòng dài 6 m × sâu 2 m)
+        // nhà chữ L / U: hành lang trong phần chung của các khối, sát sân trong
+        var ix0 = Math.max.apply(null, fBlocks.map(function(b){ return b.x; })), ix1 = Math.min.apply(null, fBlocks.map(function(b){ return b.x + b.w; }));
+        var iw = ix1 - ix0, scw = encl.w >= 8 ? 1.2 : 1, sp1 = null;
+        if(iw >= 4.2 && !inside.some(function(r){ return r.slot; })){
+          if(fBlocks.length > 1 && notch) sp1 = {x: notch.side === 'right' ? ix1 - scw : ix0, w:scw};
+          else sp1 = {x: iw >= 6.5 ? ix0 + (iw - scw) / 2 : ix1 - scw, w:scw};
+        }
+        var plain1 = function(l, r){ layoutFacadeFirst(l, r); l.forEach(function(x){ if(inside.indexOf(x) < 0) inside.push(x); }); };
+        if(!(sp1 && spineChain(inside.slice(), fBlocks, sp1, 1, inside, plain1))) layoutInBlocks(inside, fBlocks);
+      }
       LAYOUT_EXT = null;
       if(oBlocks.length){
         var oFill = {name: L.isMezz ? 'Thông tầng' : 'Mái / sân thượng', type: L.isMezz ? 'lightwell' : 'rooftop'};
@@ -5314,6 +5631,14 @@
 
     // Sân, cổng, hồ bơi chưa gán tầng (hoặc gán tầng trệt) → khu sân trước / sau
     var yardFront = [], yardBack = [], courts = [], gate = null, unplaced = [];
+    // phòng không xếp được (tầng quá chật) → không vẽ, liệt kê riêng thay vì toạ độ NaN
+    geoFloors.forEach(function(gf){
+      gf.rooms = gf.rooms.filter(function(r){
+        var ok = [r.x, r.y, r.w, r.h].every(isFinite);
+        if(!ok && !r.virtual) unplaced.push(r);
+        return ok;
+      });
+    });
     function yardOf(name){ return notch && COURT_RE.test(name) ? courts : (/sau/i.test(name) ? yardBack : yardFront); }
     var ground = geoFloors[0];
     (plan.rooms || []).forEach(function(r){
@@ -5646,6 +5971,9 @@
   }
   // Khoảng lùi trước/sau/hai bên → kích thước nhà; tự lùi thêm phía sau nếu vượt mật độ xây dựng
   function lotFootprint(c, front, back, side, sides){
+    // nhà có khoảng lùi hông (biệt thự, nhà vườn): ngang tối đa ~12 m, phần dư làm sân vườn 2 bên —
+    // nhà rộng hơn thì phòng giữa nhà xa cửa sổ, hành lang dài
+    if(sides > 0 && c.w - side * sides > 12) side = (c.w - 12) / sides;
     var bw = c.w - side * sides;
     var bl = c.l - front - back;
     var maxFp = c.w * c.l * maxDensity(c.w * c.l) / 100;
@@ -6265,6 +6593,9 @@
     // diện tích phòng theo chuẩn công năng (TCVN 13967:2024): thiếu nhiều → loại, thiếu ít → trừ điểm
     var stdQ = built ? stdAreaIssues(built.plan) : null;
     if(stdQ && stdQ.hard.length) bad.push('Lô quá nhỏ cho mẫu này: ' + stdAreaText(stdQ.hard[0]));
+    // mặt bằng phải ở được: có lối vào mọi phòng, phòng ngủ có cửa sổ, giếng trời thông, WC không trên bếp…
+    var liv = built ? livabilityOf(built) : null;
+    if(liv && liv.hard.length) bad.push('Trên lô này chưa bố trí được nhà ở được: ' + liv.hard[0]);
     if(bad.length) return {ok:false, score:0, why:bad};
     var s = 62;
     if(bedQ && bedQ.long.length){ s -= Math.min(16, bedQ.long.length * 6); why.push('✗ Phòng ngủ hơi dài: ' + bedQ.long[0]); }
@@ -6311,6 +6642,75 @@
     return out;
   }
   function stdAreaText(it){ return it.room.name + ' ' + formatNumber(round1(it.area)) + ' m² ' + (it.area < it.std.min ? '< ' + formatNumber(it.std.min) : '> ' + formatNumber(it.std.max)) + ' m²'; }
+  // ----- Kiểm tra mặt bằng "ở được" (skill thiet-ke-nha, luật L1–L10) trên hình học planGeometry -----
+  // hard: nhà không ở được / sai quy chuẩn (mẫu bị loại trên lô đó); soft: nên sửa (trừ điểm)
+  var LIV_THRU = {stairs:1, corridor:1, living:1, kitchen:1, garage:1, shop:1, elevator:1};
+  function planLivability(geo){
+    var hard = [], soft = [], E = 0.05;
+    function ov(a, b){ return Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y)); }
+    function edge(a, b){
+      var s = 0;
+      if(Math.abs(a.x + a.w - b.x) < E || Math.abs(b.x + b.w - a.x) < E) s = Math.max(s, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+      if(Math.abs(a.y + a.h - b.y) < E || Math.abs(b.y + b.h - a.y) < E) s = Math.max(s, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
+      return s;
+    }
+    function f1(v){ return formatNumber(round1(v)); }
+    var fls = geo.floors.map(function(f){ return {f:f, R: f.rooms.concat(f.openRooms || []).filter(function(r){ return r.w > 0.05 && r.h > 0.05; })}; });
+    // tường hông sát ranh đất (cách < 1 m) là tường giáp ranh, không mở cửa sổ (TCVN 9411 6.4.3.1);
+    // mặt tiền, mặt sau, tường nhìn ra sân trong / khoảng lùi hông thì mở được
+    function sideOk(x){ return Math.min(x, geo.lotW - x) >= 1 - E; }
+    fls.forEach(function(F, i){
+      var R = F.R, tag = (F.f.name || '') + ': ';
+      if(!R.length) return;
+      var outline = blockOutline(F.f.blocks || [F.f.encl]).filter(function(s){ return Math.abs(s[1] - s[3]) < 0.02 || sideOk(s[0]); });
+      function onOutline(r){
+        return outline.some(function(s){
+          if(Math.abs(s[1] - s[3]) < 0.02) return (Math.abs(s[1] - r.y) < E || Math.abs(s[1] - r.y - r.h) < E) && Math.min(s[2], r.x + r.w) - Math.max(s[0], r.x) >= 0.8;
+          return (Math.abs(s[0] - r.x) < E || Math.abs(s[0] - r.x - r.w) < E) && Math.min(s[3], r.y + r.h) - Math.max(s[1], r.y) >= 0.8;
+        });
+      }
+      // cửa sổ: tường ngoài mở được, giếng trời, ban công, sân thượng
+      function airy(r){ return onOutline(r) || R.some(function(q){ return q !== r && (q.type === 'lightwell' || q.type === 'balcony' || q.type === 'rooftop') && edge(r, q) >= 0.8; }); }
+      var y0 = Math.min.apply(null, R.map(function(r){ return r.y; }));
+      R.forEach(function(r){
+        var s = Math.min(r.w, r.h);
+        if(r.type === 'bedroom' && s < 2.35) hard.push(tag + r.name + ' hẹp ' + f1(s) + ' m (không kê nổi giường)');
+        if(r.type === 'wc' && s < 1.05) hard.push(tag + r.name + ' hẹp ' + f1(s) + ' m (không đặt được bồn cầu + cửa)');
+        if((r.type === 'bedroom' || r.type === 'rental') && !airy(r)) hard.push(tag + r.name + ' không có cửa sổ');
+      });
+      // lối đi: từ cửa chính (trệt, mặt tiền = y nhỏ) hoặc cầu thang tới mọi phòng, không xuyên phòng ngủ / WC / giếng trời
+      function thru(r){ return LIV_THRU[r.type] || (i === 0 && r.type === 'balcony'); }
+      var reach = R.filter(function(r){ return thru(r) && (r.type === 'stairs' || r.type === 'elevator' || (i === 0 && Math.abs(r.y - y0) < E)); }), q = reach.slice();
+      while(q.length){ var cur = q.shift(); R.forEach(function(r){ if(reach.indexOf(r) < 0 && thru(r) && edge(cur, r) >= 0.8){ reach.push(r); q.push(r); } }); }
+      R.forEach(function(r){
+        if(reach.indexOf(r) >= 0 || r.type === 'lightwell' || r.type === 'rooftop') return;
+        if(R.some(function(p){ return reach.indexOf(p) >= 0 && edge(p, r) >= 0.7; })) return;
+        var host = R.filter(function(p){ return (p.type === 'bedroom' || p.type === 'living' || p.type === 'office' || p.type === 'altar' || p.type === 'wc') && edge(p, r) >= 0.7 && R.some(function(z){ return reach.indexOf(z) >= 0 && edge(z, p) >= 0.7; }); })[0];
+        if(host && (r.type === 'balcony' || r.type === 'laundry' || r.type === 'other' || attachedRoom(r))) return;
+        if(r.type === 'corridor' || (r.virtual && r.type === 'other')) soft.push(tag + r.name + ' không nối lối đi'); else hard.push(tag + r.name + ' không có lối vào');
+      });
+      R.filter(function(r){ return r.type === 'wc' && /master/i.test(r.name || ''); }).forEach(function(wc){
+        var m = R.filter(function(r){ return r.type === 'bedroom' && /master/i.test(r.name || ''); })[0];
+        if(m && edge(m, wc) < 0.7) hard.push(tag + wc.name + ' không liền ' + m.name);
+      });
+      if(i === 0) return;
+      // theo phương đứng: giếng trời thông lên mái, WC / giặt không đặt trên bếp (TCVN 4451:2012 6.11)
+      var lo = fls[i - 1].R;
+      lo.filter(function(r){ return r.type === 'lightwell'; }).forEach(function(lw){
+        var cov = R.filter(function(r){ return r.type !== 'lightwell' && r.type !== 'rooftop'; }).reduce(function(s, r){ return s + ov(lw, r); }, 0);
+        if(cov > lw.w * lw.h * 0.3) hard.push(tag + 'sàn che ' + Math.round(cov / (lw.w * lw.h) * 100) + '% giếng trời tầng dưới');
+      });
+      R.filter(function(r){ return r.type === 'wc' || r.type === 'laundry'; }).forEach(function(w){
+        if(facadeOpen(w)) return;
+        lo.forEach(function(d){ if(d.type === 'kitchen' && ov(w, d) >= 0.3) hard.push(tag + w.name + ' nằm trên ' + d.name + ' (TCVN 4451)'); });
+      });
+    });
+    return {hard:hard, soft:soft};
+  }
+  function livabilityOf(built){
+    if(!built._liv){ if(!built._geo) built._geo = planGeometry(built.plan); built._liv = planLivability(built._geo); }
+    return built._liv;
+  }
   function bedroomShapeIssues(built){
     if(!built._geo) built._geo = planGeometry(built.plan);
     var out = {narrow:[], long:[]};
